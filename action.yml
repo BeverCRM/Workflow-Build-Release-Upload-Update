@@ -1,0 +1,66 @@
+name: "Build & Release & Deploy"
+description: "This will build the project, create a new release, and deploy the solution to Azure blob storage"
+
+inputs:
+  github-token:
+    description: "GitHub Token"
+    required: true
+  msbuildtarget:
+    description: "Solution folder name"
+    default: "Solution"
+    required: true
+  azure-storage-account-name:
+    description: "Azure storage account name"
+    required: true
+  azure-storage-container-name:
+    description: "Azure storage container name"
+    required: true
+  azure-storage-connection-string:
+    description: "Azure storage connection string"
+    required: true
+  delete-old-version:
+    description: "Delete the old version of the solution from Azure blob storage"
+    default: true
+  solution-package-type:
+    description: "Solution package type to upload to Azure blob storage (unmanaged / managed / both)"
+    default: "both"
+
+outputs:
+  solution-unique-name:
+    description: "Solution Unique Name"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+  solution-version:
+    description: "Solution Version"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+  release-id:
+    description: "Release Id"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+  release-name:
+    description: "Release Name"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+  release-tag-name:
+    description: "Release Tag Name"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+  release-url:
+    description: "Release Url"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+  unmanaged-zip-exists:
+    description: "Unmanaged Solution Exists"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+  managed-zip-exists:
+    description: "Managed Solution Exists"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+
+runs:
+  using: "composite"
+  steps:
+    - run: echo Hello ${{ inputs.who-to-greet }}.
+      shell: bash
+    - id: random-number-generator
+      run: echo "random-number=$(echo $RANDOM)" >> $GITHUB_OUTPUT
+      shell: bash
+    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+      shell: bash
+    - run: goodbye.sh
+      shell: bash
+      

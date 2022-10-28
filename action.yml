@@ -32,6 +32,9 @@ outputs:
   solution-version:
     description: "Solution Version"
     value: ${{ steps.random-number-generator.outputs.random-number }}
+  solution-parsed-version:
+    description: "Solution Parsed Version"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
   release-id:
     description: "Release Id"
     value: ${{ steps.random-number-generator.outputs.random-number }}
@@ -52,15 +55,21 @@ outputs:
     value: ${{ steps.random-number-generator.outputs.random-number }}
 
 runs:
-  using: "composite"
+  using: composite
+  
   steps:
-    - run: echo Hello ${{ inputs.who-to-greet }}.
-      shell: bash
-    - id: random-number-generator
-      run: echo "random-number=$(echo $RANDOM)" >> $GITHUB_OUTPUT
-      shell: bash
-    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
-      shell: bash
-    - run: goodbye.sh
-      shell: bash
+
+
+
+  # using: "composite"
+  # steps:
+  #   - run: echo Hello ${{ inputs.who-to-greet }}.
+  #     shell: bash
+  #   - id: random-number-generator
+  #     run: echo "random-number=$(echo $RANDOM)" >> $GITHUB_OUTPUT
+  #     shell: bash
+  #   - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+  #     shell: bash
+  #   - run: goodbye.sh
+  #     shell: bash
       

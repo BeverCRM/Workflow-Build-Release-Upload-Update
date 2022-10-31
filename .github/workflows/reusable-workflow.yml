@@ -1,5 +1,5 @@
-name: "Build & Release & Upload CI (Reusable Workflow)"
-# description: "This will build the project, create a new release, and upload the solution to Azure blob storage"
+name: Build & Release & Upload CI (Reusable Workflow)
+description: This workflow builds the project, creates a new release, and uploads the solution files to Azure blob storage
 
 on:
   workflow_call:
@@ -57,45 +57,263 @@ on:
         value: ${{ jobs.main.outputs.managed-zip-exists }}
 
 jobs:
-  main:
-    name: Build & Release & Upload
-    runs-on: ubuntu-latest
-    
+  build:
+    name: Building the project
+    runs-on: windows-latest
+
     outputs:
-      solution-unique-name: ${{ steps.get-solution-data.outputs.unique-name }}
-      solution-version: ${{ steps.get-solution-data.outputs.version }}
-      solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
-      release-id: ${{ steps.random-number-generator.outputs.random-number }}
-      release-name: ${{ steps.random-number-generator.outputs.random-number }}
-      release-tag-name: ${{ steps.random-number-generator.outputs.random-number }}
-      release-url: ${{ steps.random-number-generator.outputs.random-number }}
+      solution-unique-name: ${{ needs.build.outputs.solution-unique-name }}
+      solution-version: ${{ needs.build.outputs.solution-version }}
+      solution-parsed-version: ${{ needs.build.outputs.solution-parsed-version }}
       unmanaged-zip-exists: ${{ steps.unmanaged-zip-exists.outputs.info }}
       managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Setup Node.js ${{ inputs.node-verion }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node-verion }}
 
-    - name: Start ...
-      run: echo Start
-
-    - name: Show env
+    - name: Get solution unique name and version
+      id: get-solution-data
       run: |
-        echo "GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}"
+        [xml]$XmlDocument=Get-Content -Path "${{ env.msbuildtarget }}\src\Other\Solution.xml"
+        "unique-name=$( $XmlDocument.ImportExportXml.SolutionManifest.UniqueName )" >> $env:GITHUB_OUTPUT
+        "version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version )" >> $env:GITHUB_OUTPUT
+        "parsed-version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
 
-    - name: Show inputs
+    # TODO: remove
+    - name: Show step outputs (get-solution-data)
       run: |
-        echo "node-version: ${{ inputs.node-version }}"
-        echo "msbuildtarget: ${{ inputs.msbuildtarget }}"
-        echo "delete-old-version: ${{ inputs.delete-old-version }}"
-        echo "release-solution-package-type: ${{ inputs.release-solution-package-type }}"
-        echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
+        echo "${{ needs.build.outputs.solution-unique-name }}"
+        echo "${{ needs.build.outputs.solution-version }}"
+        echo "${{ needs.build.outputs.solution-parsed-version }}"
 
-    - name: Show secrets
+    - name: Install dependencies
+      id: install-dependecies
+      run: npm ci
+
+    - name: Refresh types
+      id: refresh-types
+      run: npm run refreshTypes
+
+    - name: Build project
+      id: build-project
       run: |
-        echo "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
-        echo "AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}"
-        echo "AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}"
-        echo "AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+        npm run clean --if-present
+        npm run build -- --buildMode production --if-present
 
-    - name: Finish ...
-      run: echo Finish
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+
+    - name: MSBuild
+      id: msbuild
+      working-directory: ${{ env.msbuildtarget }}
+      run: msbuild /t:rebuild /restore /p:configuration=release
+
+    - name: Check if solution exists `${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}.zip` (unmanaged)
+      id: unmanaged-zip-exists
+      run: |
+        "info=$( "$(Test-Path ${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+
+    # TODO: remove
+    - name: Show step outputs (unmanaged-zip-exists)
+      run: echo "${{ steps.unmanaged-zip-exists.outputs.info }}"
+
+    - name: Check if solution exists `${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}_managed.zip` (managed)
+      id: managed-zip-exists
+      run: |
+        "info=$( "$(Test-Path ${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+
+    # TODO: remove
+    - name: Show step outputs (managed-zip-exists)
+      run: echo "${{ steps.managed-zip-exists.outputs.info }}"
+
+    - name: "Notice - unmanaged solution"
+      if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
+      run: Write-Output "::notice title=Unmanaged solution::Unmanaged solution doesn't exist."
+
+    - name: "Notice - managed solution"
+      if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
+      run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
+
+    - name: Rename solution files to `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip` & `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip`
+      id: rename-solution-files
+      run: get-childitem -path ${{ env.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ env.msbuildtarget }}', '${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}' }
+
+    - name: Upload solution artifacts
+      id: upload-solution-artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
+        path: ${{ env.msbuildtarget }}/bin/Release/
+
+  # create-release:
+  #   name: Creating a new release v${{ needs.build.outputs.solution-version }}
+  #   needs: build
+  #   runs-on: windows-latest
+    
+  #   outputs:
+  #     release-id: ${{ steps.random-number-generator.outputs.random-number }}
+  #     release-name: ${{ steps.random-number-generator.outputs.random-number }}
+  #     release-tag-name: ${{ steps.random-number-generator.outputs.random-number }}
+  #     release-url: ${{ steps.random-number-generator.outputs.random-number }}
+
+  #   steps:
+  #   - name: Create release v${{ needs.build.outputs.solution-version }}
+  #     id: create-release
+  #     uses: actions/create-release@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+  #     with:
+  #       tag_name: v${{ needs.build.outputs.solution-version }}
+  #       release_name: v${{ needs.build.outputs.solution-version }}
+  #       body_path: CHANGELOG.md
+
+  #   - name: Download solution artifacts
+  #     id: download-solution-artifacts
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
+  #       path: github-action/artifacts/
+
+  #   - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_unmanaged.zip` (unmanaged)
+  #     id: release-unmanaged-solution
+  #     if: (steps.create-release.conclusion == 'success') &&
+  #         (steps.unmanaged-zip-exists.outputs.info == 'true') &&
+  #         ((inputs.release-solution-package-type == 'unmanaged') || (inputs.release-solution-package-type == 'both'))
+  #     uses: actions/upload-release-asset@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+  #     with:
+  #       upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #       asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-arsed-version }}.zip
+  #       asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_unmanaged.zip
+  #       asset_content_type: application/zip
+
+  #   - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip` (managed)
+  #     id: release-managed-solution
+  #     if: (steps.create-release.conclusion == 'success') &&
+  #         (steps.managed-zip-exists.outputs.info == 'true') &&
+  #         ((inputs.release-solution-package-type == 'managed') || (inputs.release-solution-package-type == 'both'))
+  #     uses: actions/upload-release-asset@v1
+  #     env:
+  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     with:
+  #       upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #       asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip
+  #       asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip
+  #       asset_content_type: application/zip
+
+  # upload-to-azure-storage:
+  #   name: Uploading the solution files to Azure blob storage
+  #   needs: build
+  #   runs-on: ubuntu-latest
+
+  #   - name: Download solution artifacts
+  #     id: download-solution-artifacts
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
+  #       path: github-action/artifacts/
+
+  #   - name: Get solution old version from Azure storage
+  #     id: get-solution-old-version-from-azure-storage
+  #     run: |
+  #       BlobListJson=$( az storage blob list \
+  #       --prefix "${{ needs.build.outputs.solution-unique-name }}" \
+  #       --account-name "${{ env.AZURE_STORAGE_ACCOUNT_NAME }}" \
+  #       --container-name "${{ env.AZURE_STORAGE_CONTAINER_NAME }}" \
+  #       --connection-string "${{ env.AZURE_STORAGE_CONNECTION_STRING }}" )
+  #       echo "blob-list-json=$( echo $BlobListJson )" >> $GITHUB_OUTPUT
+
+  #   - name: Show step outputs (get-solution-old-version-from-azure-storage)
+  #     run: echo "${{ steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json }}"
+
+  #   - name: "Notice - solution old version"
+  #     if: ${{ steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json == '[]' }}
+  #     run: echo "::notice title=Get solution old version::No blob found with name starting with \`${{ needs.build.outputs.solution-unique-name }}\`."
+
+  #   # - name: Parse JSON, get solution name from Azure response (if exists)
+  #   - name: Parse JSON, get solution names from Azure response (if exists)
+  #     id: get-solution-old-version-names
+  #     run: |
+  #       echo "info=${{ fromJSON(steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json).name }}" >> $GITHUB_OUTPUT
+  #     # echo "info=${{ fromJSON(steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json)[0].name }}" >> $GITHUB_OUTPUT
+  #     # continue-on-error: true
+
+  #   - name: Show step outputs (get-solution-old-version-names)
+  #     run: echo "${{ steps.get-solution-old-version-names.outputs.info }}"
+
+  #   - name: Delete solution old version from Azure storage (if exists)
+  #     id: delete-solution-old-version-from-azure-storage
+  #     if: (steps.get-solution-old-version-names.outputs.info != '') && (inputs.delete-old-version == 'true')
+  #     uses: Azure/cli@v1
+  #     with:
+  #       inlineScript: |
+  #         az storage blob delete \
+  #         --name "${{ steps.get-solution-old-version-name.outputs.info }}" \
+  #         --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+  #         --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+  #         --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+
+  #   - name: Upload managed solution to Azure storage (if exists)
+  #     if: steps.managed-zip-exists.outputs.info == 'true'
+  #     uses: Azure/cli@v1
+  #     with:
+  #       inlineScript: |
+  #         az storage blob upload \
+  #         --file "github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip" \
+  #         --name "${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip" \
+  #         --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+  #         --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+  #         --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+  #         --content-type application/zip \
+  #         --overwrite true
+
+
+
+
+  # main:
+  #   name: Build & Release & Upload
+  #   runs-on: ubuntu-latest
+    
+    # outputs:
+    #   solution-unique-name: ${{ needs.build.outputs.solution-unique-name }}
+    #   solution-version: ${{ needs.build.outputs.solution-version }}
+    #   solution-parsed-version: ${{ needs.build.outputs.solution-parsed-version }}
+    #   release-id: ${{ steps.random-number-generator.outputs.random-number }}
+    #   release-name: ${{ steps.random-number-generator.outputs.random-number }}
+    #   release-tag-name: ${{ steps.random-number-generator.outputs.random-number }}
+    #   release-url: ${{ steps.random-number-generator.outputs.random-number }}
+    #   unmanaged-zip-exists: ${{ steps.unmanaged-zip-exists.outputs.info }}
+    #   managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
+
+    # steps:
+    # - uses: actions/checkout@v3
+
+    # - name: Start ...
+    #   run: echo Start
+
+    # - name: Show env
+    #   run: |
+    #     echo "GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}"
+
+    # - name: Show inputs
+    #   run: |
+    #     echo "node-version: ${{ inputs.node-version }}"
+    #     echo "msbuildtarget: ${{ inputs.msbuildtarget }}"
+    #     echo "delete-old-version: ${{ inputs.delete-old-version }}"
+    #     echo "release-solution-package-type: ${{ inputs.release-solution-package-type }}"
+    #     echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
+
+    # - name: Show secrets
+    #   run: |
+    #     echo "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
+    #     echo "AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}"
+    #     echo "AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}"
+    #     echo "AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+
+    # - name: Finish ...
+    #   run: echo Finish
+

@@ -5,33 +5,33 @@ on:
   workflow_call:
     inputs:
       node-version:
-        type: string
-        default: 16
         description: 'Node verion'
-      msbuildtarget:
+        default: 16
         type: string
-        default: 'Solution'
+      msbuildtarget:
         description: 'Solution folder name'
+        default: 'Solution'
+        type: string
       delete-old-version:
-        type: boolean
-        default: true
         description: 'Delete the old version of the solution from Azure blob storage'
+        default: true
+        type: boolean
       release-solution-package-type:
-        type: choice
-        options:
-        - unmanaged
-        - managed
-        - both
-        default: 'managed'
         description: 'Solution package type to upload to release assets (unmanaged / managed / both)'
-      azure-solution-package-type:
+        default: 'managed'
         type: choice
         options:
         - unmanaged
         - managed
         - both
-        default: 'managed'
+      azure-solution-package-type:
         description: 'Solution package type to upload to Azure blob storage (unmanaged / managed / both)'
+        default: 'managed'
+        type: choice
+        options:
+        - unmanaged
+        - managed
+        - both
 
     outputs:
       solution-unique-name:

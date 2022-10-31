@@ -146,10 +146,10 @@ jobs:
     runs-on: windows-latest
     
     outputs:
-      release-id: ${{ steps.random-number-generator.outputs.random-number }}
-      release-name: ${{ steps.random-number-generator.outputs.random-number }}
-      release-tag-name: ${{ steps.random-number-generator.outputs.random-number }}
-      release-url: ${{ steps.random-number-generator.outputs.random-number }}
+      release-id: ${{ steps.create-release.outputs.id }}
+      release-name: v${{ needs.build.outputs.solution-version }}
+      release-tag-name: v${{ needs.build.outputs.solution-version }}
+      release-url: ${{ steps.create-release.outputs.html_url }}
 
     steps:
     - uses: actions/checkout@v3

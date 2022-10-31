@@ -77,6 +77,6 @@ jobs:
         echo "release-solution-package-type: ${{ inputs.release-solution-package-type }}"
         echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
 
-    - name: Show secrets
-      run: |
-        echo "test: ${{ secrets.test }}"
+    # - name: Show secrets
+    #   run: |
+    #     echo "test: ${{ secrets.test }}"

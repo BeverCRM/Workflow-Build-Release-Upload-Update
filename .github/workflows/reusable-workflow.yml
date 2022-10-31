@@ -3,22 +3,22 @@ name: "Build & Release & Upload CI"
 
 on:
   workflow_call:
-    inputs:
-      node-version:
-        description: "Node verion"
-        default: 16
-      msbuildtarget:
-        description: "Solution folder name"
-        default: "Solution"
-      delete-old-version:
-        description: "Delete the old version of the solution from Azure blob storage"
-        default: true
-      release-solution-package-type:
-        description: "Solution package type to upload to release assets (unmanaged / managed / both)"
-        default: "managed"
-      azure-solution-package-type:
-        description: "Solution package type to upload to Azure blob storage (unmanaged / managed / both)"
-        default: "managed"
+    # inputs:
+    #   node-version:
+    #     description: "Node verion"
+    #     default: 16
+    #   msbuildtarget:
+    #     description: "Solution folder name"
+    #     default: "Solution"
+    #   delete-old-version:
+    #     description: "Delete the old version of the solution from Azure blob storage"
+    #     default: true
+    #   release-solution-package-type:
+    #     description: "Solution package type to upload to release assets (unmanaged / managed / both)"
+    #     default: "managed"
+    #   azure-solution-package-type:
+    #     description: "Solution package type to upload to Azure blob storage (unmanaged / managed / both)"
+    #     default: "managed"
 
     # secrets: inherit # (in calling workflow)
     # secrets:
@@ -29,6 +29,7 @@ outputs:
   test:
     description: "This is a sample output."
     value: "BLA BLa Bla bla"
+
   # solution-unique-name:
   #   description: "Solution Unique Name"
   #   value: ${{ steps.get-solution-data.outputs.unique-name }}
@@ -64,18 +65,21 @@ jobs:
     steps:
     # - uses: actions/checkout@v3
 
-    - name: Show env
-      run: |
-        echo "${{ env.GITHUB_TOKEN }}"
-        echo "${{ env.GITHUB_OUTPUT }}"
+    - name: Working ...
+      run: echo "I'm already workign..."
 
-    - name: Show inputs
-      run: |
-        echo "node-version: ${{ inputs.node-version }}"
-        echo "msbuildtarget: ${{ inputs.msbuildtarget }}"
-        echo "delete-old-version: ${{ inputs.delete-old-version }}"
-        echo "release-solution-package-type: ${{ inputs.release-solution-package-type }}"
-        echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
+    # - name: Show env
+    #   run: |
+    #     echo "${{ env.GITHUB_TOKEN }}"
+    #     echo "${{ env.GITHUB_OUTPUT }}"
+
+    # - name: Show inputs
+    #   run: |
+    #     echo "node-version: ${{ inputs.node-version }}"
+    #     echo "msbuildtarget: ${{ inputs.msbuildtarget }}"
+    #     echo "delete-old-version: ${{ inputs.delete-old-version }}"
+    #     echo "release-solution-package-type: ${{ inputs.release-solution-package-type }}"
+    #     echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
 
     # - name: Show secrets
     #   run: |

@@ -1,0 +1,84 @@
+name: "Build & Release & Upload CI"
+description: "This will build the project, create a new release, and upload the solution to Azure blob storage"
+
+on:
+  workflow_call:
+
+inputs:
+  node-version:
+    description: "Node verion"
+    default: 16
+  msbuildtarget:
+    description: "Solution folder name"
+    default: "Solution"
+  delete-old-version:
+    description: "Delete the old version of the solution from Azure blob storage"
+    default: true
+  release-solution-package-type:
+    description: "Solution package type to upload to release assets (unmanaged / managed / both)"
+    default: "managed"
+  azure-solution-package-type:
+    description: "Solution package type to upload to Azure blob storage (unmanaged / managed / both)"
+    default: "managed"
+
+# secrets: inherit # (in calling workflow)
+# secrets:
+#   test:
+#     required: true
+
+outputs:
+  test:
+    description: "This is a sample output."
+    value: "BLA BLa Bla bla"
+  # solution-unique-name:
+  #   description: "Solution Unique Name"
+  #   value: ${{ steps.get-solution-data.outputs.unique-name }}
+  # solution-version:
+  #   description: "Solution Version"
+  #   value: ${{ steps.get-solution-data.outputs.version }}
+  # solution-parsed-version:
+  #   description: "Solution Parsed Version"
+  #   value: ${{ steps.get-solution-data.outputs.parsed-version }}
+  # release-id:
+  #   description: "Release Id"
+  #   value: ${{ steps.random-number-generator.outputs.random-number }}
+  # release-name:
+  #   description: "Release Name"
+  #   value: ${{ steps.random-number-generator.outputs.random-number }}
+  # release-tag-name:
+  #   description: "Release Tag Name"
+  #   value: ${{ steps.random-number-generator.outputs.random-number }}
+  # release-url:
+  #   description: "Release Url"
+  #   value: ${{ steps.random-number-generator.outputs.random-number }}
+  # unmanaged-zip-exists:
+  #   description: "Unmanaged Solution Exists"
+  #   value: ${{ steps.unmanaged-zip-exists.outputs.info }}
+  # managed-zip-exists:
+  #   description: "Managed Solution Exists"
+  #   value: ${{ steps.managed-zip-exists.outputs.info }}
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Show env
+      shell: bash
+      run: |
+        echo "${{ env.GITHUB_TOKEN }}"
+        echo "${{ env.GITHUB_OUTPUT }}"
+
+    - name: Show inputs
+      shell: bash
+      run: |
+        echo "node-version: ${{ inputs.node-version }}"
+        echo "msbuildtarget: ${{ inputs.msbuildtarget }}"
+        echo "delete-old-version: ${{ inputs.delete-old-version }}"
+        echo "release-solution-package-type: ${{ inputs.release-solution-package-type }}"
+        echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
+
+    - name: Show secrets
+      shell: bash
+      run: |
+        echo "test: ${{ secrets.test }}"

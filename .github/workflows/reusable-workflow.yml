@@ -58,7 +58,6 @@ on:
 
 jobs:
   build:
-    name: Building the project
     runs-on: windows-latest
 
     outputs:
@@ -151,7 +150,6 @@ jobs:
         path: ${{ inputs.msbuildtarget }}/bin/Release/
 
   create-release:
-    name: Creating a new release v${{ needs.build.outputs.solution-version }}
     needs: build
     runs-on: windows-latest
     
@@ -210,7 +208,6 @@ jobs:
         asset_content_type: application/zip
 
   # upload-to-azure-storage:
-  #   name: Uploading the solution files to Azure blob storage
   #   needs: build
   #   runs-on: ubuntu-latest
 

@@ -79,7 +79,7 @@ jobs:
     - name: Get solution unique name and version
       id: get-solution-data
       run: |
-        [xml]$XmlDocument=Get-Content -Path "${{ env.msbuildtarget }}\src\Other\Solution.xml"
+        [xml]$XmlDocument=Get-Content -Path "${{ inputs.msbuildtarget }}\src\Other\Solution.xml"
         "unique-name=$( $XmlDocument.ImportExportXml.SolutionManifest.UniqueName )" >> $env:GITHUB_OUTPUT
         "version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version )" >> $env:GITHUB_OUTPUT
         "parsed-version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version.replace('.', '_') )" >> $env:GITHUB_OUTPUT

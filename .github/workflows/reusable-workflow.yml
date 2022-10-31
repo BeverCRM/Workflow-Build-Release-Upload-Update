@@ -69,6 +69,8 @@ jobs:
       managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
 
     steps:
+    - uses: actions/checkout@v3
+
     - name: Setup Node.js ${{ inputs.node-verion }}
       uses: actions/setup-node@v3
       with:
@@ -160,6 +162,8 @@ jobs:
   #     release-url: ${{ steps.random-number-generator.outputs.random-number }}
 
   #   steps:
+      # - uses: actions/checkout@v3
+
   #   - name: Create release v${{ needs.build.outputs.solution-version }}
   #     id: create-release
   #     uses: actions/create-release@v1
@@ -210,6 +214,9 @@ jobs:
   #   needs: build
   #   runs-on: ubuntu-latest
 
+      # steps:
+      # - uses: actions/checkout@v3
+      
   #   - name: Download solution artifacts
   #     id: download-solution-artifacts
   #     uses: actions/download-artifact@v3

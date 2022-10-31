@@ -150,64 +150,64 @@ jobs:
         name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
         path: ${{ inputs.msbuildtarget }}/bin/Release/
 
-  # create-release:
-  #   name: Creating a new release v${{ needs.build.outputs.solution-version }}
-  #   needs: build
-  #   runs-on: windows-latest
+  create-release:
+    name: Creating a new release v${{ needs.build.outputs.solution-version }}
+    needs: build
+    runs-on: windows-latest
     
-  #   outputs:
-  #     release-id: ${{ steps.random-number-generator.outputs.random-number }}
-  #     release-name: ${{ steps.random-number-generator.outputs.random-number }}
-  #     release-tag-name: ${{ steps.random-number-generator.outputs.random-number }}
-  #     release-url: ${{ steps.random-number-generator.outputs.random-number }}
+    outputs:
+      release-id: ${{ steps.random-number-generator.outputs.random-number }}
+      release-name: ${{ steps.random-number-generator.outputs.random-number }}
+      release-tag-name: ${{ steps.random-number-generator.outputs.random-number }}
+      release-url: ${{ steps.random-number-generator.outputs.random-number }}
 
-  #   steps:
-      # - uses: actions/checkout@v3
+    steps:
+    - uses: actions/checkout@v3
 
-  #   - name: Create release v${{ needs.build.outputs.solution-version }}
-  #     id: create-release
-  #     uses: actions/create-release@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-  #     with:
-  #       tag_name: v${{ needs.build.outputs.solution-version }}
-  #       release_name: v${{ needs.build.outputs.solution-version }}
-  #       body_path: CHANGELOG.md
+    - name: Create release v${{ needs.build.outputs.solution-version }}
+      id: create-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ needs.build.outputs.solution-version }}
+        release_name: v${{ needs.build.outputs.solution-version }}
+        body_path: CHANGELOG.md
 
-  #   - name: Download solution artifacts
-  #     id: download-solution-artifacts
-  #     uses: actions/download-artifact@v3
-  #     with:
-  #       name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
-  #       path: github-action/artifacts/
+    - name: Download solution artifacts
+      id: download-solution-artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
+        path: github-action/artifacts/
 
-  #   - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_unmanaged.zip` (unmanaged)
-  #     id: release-unmanaged-solution
-  #     if: (steps.create-release.conclusion == 'success') &&
-  #         (steps.unmanaged-zip-exists.outputs.info == 'true') &&
-  #         ((inputs.release-solution-package-type == 'unmanaged') || (inputs.release-solution-package-type == 'both'))
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.create-release.outputs.upload_url }}
-  #       asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-arsed-version }}.zip
-  #       asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_unmanaged.zip
-  #       asset_content_type: application/zip
+    - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_unmanaged.zip` (unmanaged)
+      id: release-unmanaged-solution
+      if: (steps.create-release.conclusion == 'success') &&
+          (needs.build.outputs.unmanaged-zip-exists == 'true') &&
+          ((inputs.release-solution-package-type == 'unmanaged') || (inputs.release-solution-package-type == 'both'))
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-arsed-version }}.zip
+        asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_unmanaged.zip
+        asset_content_type: application/zip
 
-  #   - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip` (managed)
-  #     id: release-managed-solution
-  #     if: (steps.create-release.conclusion == 'success') &&
-  #         (steps.managed-zip-exists.outputs.info == 'true') &&
-  #         ((inputs.release-solution-package-type == 'managed') || (inputs.release-solution-package-type == 'both'))
-  #     uses: actions/upload-release-asset@v1
-  #     env:
-  #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     with:
-  #       upload_url: ${{ steps.create-release.outputs.upload_url }}
-  #       asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip
-  #       asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip
-  #       asset_content_type: application/zip
+    - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip` (managed)
+      id: release-managed-solution
+      if: (steps.create-release.conclusion == 'success') &&
+          (needs.build.outputs.managed-zip-exists == 'true') &&
+          ((inputs.release-solution-package-type == 'managed') || (inputs.release-solution-package-type == 'both'))
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip
+        asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip
+        asset_content_type: application/zip
 
   # upload-to-azure-storage:
   #   name: Uploading the solution files to Azure blob storage

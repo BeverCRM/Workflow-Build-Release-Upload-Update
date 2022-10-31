@@ -20,18 +20,12 @@ on:
         description: 'Solution package type to upload to release assets (unmanaged / managed / both)'
         default: 'managed'
         type: choice
-        options:
-        - unmanaged
-        - managed
-        - both
+        options: [ unmanaged, managed, both ]
       azure-solution-package-type:
         description: 'Solution package type to upload to Azure blob storage (unmanaged / managed / both)'
         default: 'managed'
         type: choice
-        options:
-        - unmanaged
-        - managed
-        - both
+        options: [ unmanaged, managed, both ]
 
     outputs:
       solution-unique-name:

@@ -64,13 +64,11 @@ jobs:
     
     steps:
     - name: Show env
-      shell: bash
       run: |
         echo "${{ env.GITHUB_TOKEN }}"
         echo "${{ env.GITHUB_OUTPUT }}"
 
     - name: Show inputs
-      shell: bash
       run: |
         echo "node-version: ${{ inputs.node-version }}"
         echo "msbuildtarget: ${{ inputs.msbuildtarget }}"
@@ -79,6 +77,5 @@ jobs:
         echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
 
     - name: Show secrets
-      shell: bash
       run: |
         echo "test: ${{ secrets.test }}"

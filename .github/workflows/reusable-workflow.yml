@@ -7,59 +7,59 @@ on:
       node-version:
         type: string
         default: 16
-        description: Node verion
+        description: 'Node verion'
       msbuildtarget:
         type: string
-        default: Solution
-        description: Solution folder name
+        default: 'Solution'
+        description: 'Solution folder name'
       delete-old-version:
         type: boolean
         default: true
-        description: Delete the old version of the solution from Azure blob storage
+        description: 'Delete the old version of the solution from Azure blob storage'
       release-solution-package-type:
         type: choice
         options:
         - unmanaged
         - managed
         - both
-        default: managed
-        description: Solution package type to upload to release assets (unmanaged / managed / both)
+        default: 'managed'
+        description: 'Solution package type to upload to release assets (unmanaged / managed / both)'
       azure-solution-package-type:
         type: choice
         options:
         - unmanaged
         - managed
         - both
-        default: managed
-        description: Solution package type to upload to Azure blob storage (unmanaged / managed / both)
+        default: 'managed'
+        description: 'Solution package type to upload to Azure blob storage (unmanaged / managed / both)'
 
     outputs:
       solution-unique-name:
-        description: Solution Unique Name
+        description: 'Solution Unique Name'
         value: ${{ steps.get-solution-data.outputs.unique-name }}
       solution-version:
-        description: Solution Version
+        description: 'Solution Version'
         value: ${{ steps.get-solution-data.outputs.version }}
       solution-parsed-version:
-        description: Solution Parsed Version
+        description: 'Solution Parsed Version'
         value: ${{ steps.get-solution-data.outputs.parsed-version }}
       release-id:
-        description: Release Id
+        description: 'Release Id'
         value: ${{ steps.random-number-generator.outputs.random-number }}
       release-name:
-        description: Release Name
+        description: 'Release Name'
         value: ${{ steps.random-number-generator.outputs.random-number }}
       release-tag-name:
-        description: Release Tag Name
+        description: 'Release Tag Name'
         value: ${{ steps.random-number-generator.outputs.random-number }}
       release-url:
-        description: Release Url
+        description: 'Release Url'
         value: ${{ steps.random-number-generator.outputs.random-number }}
       unmanaged-zip-exists:
-        description: Unmanaged Solution Exists
+        description: 'Unmanaged Solution Exists'
         value: ${{ steps.unmanaged-zip-exists.outputs.info }}
       managed-zip-exists:
-        description: Managed Solution Exists
+        description: 'Managed Solution Exists'
         value: ${{ steps.managed-zip-exists.outputs.info }}
 
 jobs:

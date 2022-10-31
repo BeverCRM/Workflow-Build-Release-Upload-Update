@@ -4,9 +4,9 @@ name: "Build & Release & Upload CI"
 on:
   workflow_call:
     outputs:
-    test:
-      description: "This is a sample output."
-      value: BLA BLa Bla bla
+      test:
+        description: "This is a sample output."
+        value: "BLA BLa Bla bla"
     # inputs:
     #   node-version:
     #     description: "Node verion"

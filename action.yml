@@ -80,88 +80,88 @@ runs:
       echo "${{ inputs.azure-solution-package-type }}"
 
   # build:
-  steps:
-  - name: Setup Node.js ${{ inputs.node-verion }}
-    uses: actions/setup-node@v3
-    with:
-      node-version: ${{ inputs.node-verion }}
+  # steps:
+  # - name: Setup Node.js ${{ inputs.node-verion }}
+  #   uses: actions/setup-node@v3
+  #   with:
+  #     node-version: ${{ inputs.node-verion }}
 
-  - name: Get solution unique name and version
-    id: get-solution-data
-    shell: pwsh
-    run: |
-      [xml]$XmlDocument=Get-Content -Path "${{ env.msbuildtarget }}\src\Other\Solution.xml"
-      "unique-name=$( $XmlDocument.ImportExportXml.SolutionManifest.UniqueName )" >> $env:GITHUB_OUTPUT
-      "version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version )" >> $env:GITHUB_OUTPUT
-      "parsed-version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
+  # - name: Get solution unique name and version
+  #   id: get-solution-data
+  #   shell: pwsh
+  #   run: |
+  #     [xml]$XmlDocument=Get-Content -Path "${{ env.msbuildtarget }}\src\Other\Solution.xml"
+  #     "unique-name=$( $XmlDocument.ImportExportXml.SolutionManifest.UniqueName )" >> $env:GITHUB_OUTPUT
+  #     "version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version )" >> $env:GITHUB_OUTPUT
+  #     "parsed-version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
 
-  - name: Show step outputs (get-solution-data)
-    shell: bash
-    run: |
-      echo "${{ steps.get-solution-data.outputs.unique-name }}"
-      echo "${{ steps.get-solution-data.outputs.version }}"
-      echo "${{ steps.get-solution-data.outputs.parsed-version }}"
+  # - name: Show step outputs (get-solution-data)
+  #   shell: bash
+  #   run: |
+  #     echo "${{ steps.get-solution-data.outputs.unique-name }}"
+  #     echo "${{ steps.get-solution-data.outputs.version }}"
+  #     echo "${{ steps.get-solution-data.outputs.parsed-version }}"
 
-  - name: Install dependencies
-    id: install-dependecies
-    shell: pwsh
-    run: npm ci
+  # - name: Install dependencies
+  #   id: install-dependecies
+  #   shell: pwsh
+  #   run: npm ci
 
-  - name: Refresh types
-    id: refresh-types
-    shell: pwsh
-    run: npm run refreshTypes
+  # - name: Refresh types
+  #   id: refresh-types
+  #   shell: pwsh
+  #   run: npm run refreshTypes
 
-  - name: Build project
-    id: build-project
-    shell: pwsh
-    run: |
-      npm run clean --if-present
-      npm run build -- --buildMode production --if-present
+  # - name: Build project
+  #   id: build-project
+  #   shell: pwsh
+  #   run: |
+  #     npm run clean --if-present
+  #     npm run build -- --buildMode production --if-present
 
-  - name: Setup MSBuild
-    uses: microsoft/setup-msbuild@v1
+  # - name: Setup MSBuild
+  #   uses: microsoft/setup-msbuild@v1
 
-  - name: MSBuild
-    id: msbuild
-    shell: pwsh
-    working-directory: ${{ env.msbuildtarget }}
-    run: msbuild /t:rebuild /restore /p:configuration=release
+  # - name: MSBuild
+  #   id: msbuild
+  #   shell: pwsh
+  #   working-directory: ${{ env.msbuildtarget }}
+  #   run: msbuild /t:rebuild /restore /p:configuration=release
 
-  - name: Check if solution exists `${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}.zip` (unmanaged)
-    id: unmanaged-zip-exists
-    shell: pwsh
-    run: |
-      "info=$( "$(Test-Path ${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+  # - name: Check if solution exists `${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}.zip` (unmanaged)
+  #   id: unmanaged-zip-exists
+  #   shell: pwsh
+  #   run: |
+  #     "info=$( "$(Test-Path ${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-  - name: Show step outputs (unmanaged-zip-exists)
-    shell: bash
-    run: echo "${{ steps.unmanaged-zip-exists.outputs.info }}"
+  # - name: Show step outputs (unmanaged-zip-exists)
+  #   shell: bash
+  #   run: echo "${{ steps.unmanaged-zip-exists.outputs.info }}"
 
-  - name: Check if solution exists `${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}_managed.zip` (managed)
-    id: managed-zip-exists
-    shell: pwsh
-    run: |
-      "info=$( "$(Test-Path ${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+  # - name: Check if solution exists `${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}_managed.zip` (managed)
+  #   id: managed-zip-exists
+  #   shell: pwsh
+  #   run: |
+  #     "info=$( "$(Test-Path ${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-  - name: Show step outputs (managed-zip-exists)
-    shell: bash
-    run: echo "${{ steps.managed-zip-exists.outputs.info }}"
+  # - name: Show step outputs (managed-zip-exists)
+  #   shell: bash
+  #   run: echo "${{ steps.managed-zip-exists.outputs.info }}"
 
-  - name: "Notice - unmanaged solution"
-    if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
-    shell: pwsh
-    run: Write-Output "::notice title=Unmanaged solution::Unmanaged solution doesn't exist."
+  # - name: "Notice - unmanaged solution"
+  #   if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
+  #   shell: pwsh
+  #   run: Write-Output "::notice title=Unmanaged solution::Unmanaged solution doesn't exist."
 
-  - name: "Notice - managed solution"
-    if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
-    shell: pwsh
-    run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
+  # - name: "Notice - managed solution"
+  #   if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
+  #   shell: pwsh
+  #   run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
 
-  - name: Rename solution files to `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}.zip` & `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip`
-    id: rename-solution-files
-    shell: pwsh
-    run: get-childitem -path ${{ env.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ env.msbuildtarget }}', '${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}' }
+  # - name: Rename solution files to `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}.zip` & `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip`
+  #   id: rename-solution-files
+  #   shell: pwsh
+  #   run: get-childitem -path ${{ env.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ env.msbuildtarget }}', '${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}' }
 
   # TODO: remove ?
   # - name: Upload solution artifacts

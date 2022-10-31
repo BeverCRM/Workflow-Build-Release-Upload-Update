@@ -117,18 +117,10 @@ jobs:
       run: |
         "info=$( "$(Test-Path ${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-    # TODO: remove
-    - name: Show step outputs (unmanaged-zip-exists)
-      run: echo "${{ steps.unmanaged-zip-exists.outputs.info }}"
-
     - name: Check if solution exists `${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}_managed.zip` (managed)
       id: managed-zip-exists
       run: |
         "info=$( "$(Test-Path ${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
-
-    # TODO: remove
-    - name: Show step outputs (managed-zip-exists)
-      run: echo "${{ steps.managed-zip-exists.outputs.info }}"
 
     - name: "Notice - unmanaged solution"
       if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}

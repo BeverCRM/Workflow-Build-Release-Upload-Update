@@ -49,11 +49,6 @@ on:
         description: "Managed Solution Exists"
         value: ${{ steps.managed-zip-exists.outputs.info }}
 
-    # secrets: inherit # (in calling workflow)
-    # secrets:
-    #   test:
-    #     required: true
-
 jobs:
   main:
     runs-on: ubuntu-latest

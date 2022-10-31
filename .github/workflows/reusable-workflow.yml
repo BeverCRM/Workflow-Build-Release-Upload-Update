@@ -66,8 +66,7 @@ jobs:
 
     - name: Show env
       run: |
-        echo "${{ env.GITHUB_TOKEN }}"
-        echo "${{ env.GITHUB_OUTPUT }}"
+        echo "GITHUB_OUTPUT: ${{ env.GITHUB_OUTPUT }}"
 
     - name: Show inputs
       run: |
@@ -79,7 +78,10 @@ jobs:
 
     - name: Show secrets
       run: |
-        echo "test: ${{ secrets.test }}"
+        echo "GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}"
+        echo "AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}"
+        echo "AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}"
+        echo "AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
     - name: Finish ...
       run: echo Finish

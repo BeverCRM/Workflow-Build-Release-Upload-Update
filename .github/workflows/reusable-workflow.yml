@@ -1,5 +1,5 @@
 name: "Build & Release & Upload CI"
-description: "This will build the project, create a new release, and upload the solution to Azure blob storage"
+# description: "This will build the project, create a new release, and upload the solution to Azure blob storage"
 
 on:
   workflow_call:

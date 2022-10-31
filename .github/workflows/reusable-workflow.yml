@@ -1,4 +1,4 @@
-name: "Build & Release & Upload CI"
+name: "Build & Release & Upload CI (Reusable Workflow)"
 # description: "This will build the project, create a new release, and upload the solution to Azure blob storage"
 
 on:
@@ -30,36 +30,48 @@ on:
     outputs:
       solution-unique-name:
         description: Solution Unique Name
-        value: ${{ steps.get-solution-data.outputs.unique-name }}
+        value: ${{ jobs.main.outputs.get-solution-data }}
       solution-version:
         description: Solution Version
-        value: ${{ steps.get-solution-data.outputs.version }}
+        value: ${{ jobs.main.outputs.get-solution-data }}
       solution-parsed-version:
         description: Solution Parsed Version
-        value: ${{ steps.get-solution-data.outputs.parsed-version }}
+        value: ${{ jobs.main.outputs.get-solution-data }}
       release-id:
         description: Release Id
-        value: ${{ steps.random-number-generator.outputs.random-number }}
+        value: ${{ jobs.main.outputs.random-number-generator }}
       release-name:
         description: Release Name
-        value: ${{ steps.random-number-generator.outputs.random-number }}
+        value: ${{ jobs.main.outputs.random-number-generator }}
       release-tag-name:
         description: Release Tag Name
-        value: ${{ steps.random-number-generator.outputs.random-number }}
+        value: ${{ jobs.main.outputs.random-number-generator }}
       release-url:
         description: Release Url
-        value: ${{ steps.random-number-generator.outputs.random-number }}
+        value: ${{ jobs.main.outputs.random-number-generator }}
       unmanaged-zip-exists:
         description: Unmanaged Solution Exists
-        value: ${{ steps.unmanaged-zip-exists.outputs.info }}
+        value: ${{ jobs.main.outputs.unmanaged-zip-exists }}
       managed-zip-exists:
         description: Managed Solution Exists
-        value: ${{ steps.managed-zip-exists.outputs.info }}
+        value: ${{ jobs.main.outputs.managed-zip-exists }}
 
 jobs:
   main:
+    name: Build & Release & Upload
     runs-on: ubuntu-latest
     
+    outputs:
+      solution-unique-name: ${{ steps.get-solution-data.outputs.unique-name }}
+      solution-version: ${{ steps.get-solution-data.outputs.version }}
+      solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
+      release-id: ${{ steps.random-number-generator.outputs.random-number }}
+      release-name: ${{ steps.random-number-generator.outputs.random-number }}
+      release-tag-name: ${{ steps.random-number-generator.outputs.random-number }}
+      release-url: ${{ steps.random-number-generator.outputs.random-number }}
+      unmanaged-zip-exists: ${{ steps.unmanaged-zip-exists.outputs.info }}
+      managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
+
     steps:
     - uses: actions/checkout@v3
 

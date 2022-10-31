@@ -110,22 +110,22 @@ jobs:
 
     - name: MSBuild
       id: msbuild
-      working-directory: ${{ env.msbuildtarget }}
+      working-directory: ${{ inputs.msbuildtarget }}
       run: msbuild /t:rebuild /restore /p:configuration=release
 
-    - name: Check if solution exists `${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}.zip` (unmanaged)
+    - name: Check if solution exists `${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}.zip` (unmanaged)
       id: unmanaged-zip-exists
       run: |
-        "info=$( "$(Test-Path ${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+        "info=$( "$(Test-Path ${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
     # TODO: remove
     - name: Show step outputs (unmanaged-zip-exists)
       run: echo "${{ steps.unmanaged-zip-exists.outputs.info }}"
 
-    - name: Check if solution exists `${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}_managed.zip` (managed)
+    - name: Check if solution exists `${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}_managed.zip` (managed)
       id: managed-zip-exists
       run: |
-        "info=$( "$(Test-Path ${{ env.msbuildtarget }}/bin/Release/${{ env.msbuildtarget }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+        "info=$( "$(Test-Path ${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
     # TODO: remove
     - name: Show step outputs (managed-zip-exists)
@@ -141,14 +141,14 @@ jobs:
 
     - name: Rename solution files to `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip` & `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip`
       id: rename-solution-files
-      run: get-childitem -path ${{ env.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ env.msbuildtarget }}', '${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}' }
+      run: get-childitem -path ${{ inputs.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.msbuildtarget }}', '${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}' }
 
     - name: Upload solution artifacts
       id: upload-solution-artifacts
       uses: actions/upload-artifact@v3
       with:
         name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
-        path: ${{ env.msbuildtarget }}/bin/Release/
+        path: ${{ inputs.msbuildtarget }}/bin/Release/
 
   # create-release:
   #   name: Creating a new release v${{ needs.build.outputs.solution-version }}

@@ -259,7 +259,6 @@ jobs:
         inlineScript: |
           az storage blob upload \
           --file "github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip" \
-          --name "${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip" \
           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
@@ -273,7 +272,6 @@ jobs:
         inlineScript: |
           az storage blob upload \
           --file "github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip" \
-          --name "${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip" \
           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \

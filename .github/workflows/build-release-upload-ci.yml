@@ -279,4 +279,3 @@ jobs:
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
           --content-type application/zip \
           --overwrite true
-

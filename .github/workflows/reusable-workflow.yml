@@ -138,7 +138,7 @@ jobs:
       id: upload-solution-artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ steps.get-solution-data.outputs.solution-unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_artifacts
+        name: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_artifacts
         path: ${{ inputs.msbuildtarget }}/bin/Release/
 
   create-release:

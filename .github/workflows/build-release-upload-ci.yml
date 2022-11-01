@@ -250,7 +250,7 @@ jobs:
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
           --content-type application/zip \
-          --overwrite true
+        # --overwrite true
 
     - name: Upload solution new version file (unmanaged) to Azure storage (if exists)
       if: (needs.build.outputs.unmanaged-zip-exists == 'true') && (inputs.azure-solution-package-type == 'unmanaged')
@@ -263,7 +263,7 @@ jobs:
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
           --content-type application/zip \
-          --overwrite true
+        # --overwrite true
 
     - name: Upload solution new version file (managed) to Azure storage (if exists)
       if: (needs.build.outputs.managed-zip-exists == 'true') && (inputs.azure-solution-package-type == 'managed')
@@ -276,4 +276,4 @@ jobs:
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
           --content-type application/zip \
-          --overwrite true
+        # --overwrite true

@@ -27,7 +27,7 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
 - ```managed-zip-exists``` - **boolean** | Whether the managed solution exists or not.
 
 ### Example workflow: create-release-and-upload-solution-to-azure-storage-ci
-> On every *push* or *pull request* on the *release* branch, run this workflow.
+On every *push* or *pull request* on the *release* branch, run this workflow.
 
 ```yaml
 on:

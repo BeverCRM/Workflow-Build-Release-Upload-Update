@@ -3,6 +3,11 @@
 
 This is a reusable workflow that builds the project, creates a new release, and uploads the solution files to Azure blob storage.
 
+## Usage
+
+**Pre-requisites**
+Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An [example workflow](https://github.com/BeverCRM/Build-Release-Upload-CI-Workflow#example-workflow-build-release-upload-ci) is available below. For more information, reference the GitHub Help Documentation for [creating a workflow file](https://docs.github.com/en/actions/using-workflows#creating-a-workflow-file).
+
 **Inputs**
 - ```node-version``` - **Optional** | **number** | Default: 16 | Node version.
 - ```msbuildtarget``` - **Optional** | **string** | Default: Solution | The solution directory in the root path where the 'src/Other/Solution.xml' file is located.

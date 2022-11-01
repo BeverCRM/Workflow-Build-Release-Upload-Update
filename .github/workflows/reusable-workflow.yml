@@ -16,10 +16,11 @@ on:
         default: true
         type: boolean
       release-solution-package-type:
-        description: Solution package type to upload to release assets (unmanaged / managed / both)
-        default: managed
+        description: Solution package type to upload to release assets (none / unmanaged / managed / both)
+        default: none
         type: choice
         options: 
+        - 'none'
         - 'unmanaged'
         - 'managed'
         - 'both'

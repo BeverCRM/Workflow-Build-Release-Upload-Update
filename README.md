@@ -1,4 +1,3 @@
-<!-- # Build & Release & Upload CI (Reusable Workflow) -->
 # Github Reusable Workflow - Build & Release & Upload CI
 
 This reusable workflow builds the project, creates a new release, and uploads the solution files to Azure blob storage.

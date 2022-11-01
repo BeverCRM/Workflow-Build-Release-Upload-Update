@@ -1,7 +1,7 @@
 # Github Reusable Workflow - Build & Release & Upload CI
 > *Used within Bever.*
 
-This reusable workflow builds the project, creates a new release, and uploads the solution file(s) to Azure blob storage.
+This reusable workflow builds the project, creates a new release, and uploads the solution files to Azure blob storage.
 
 **Inputs**
 - ```node-version``` - **Optional** | **string** | Default: 16 | Node version.

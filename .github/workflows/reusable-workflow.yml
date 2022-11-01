@@ -20,17 +20,17 @@ on:
         default: managed
         type: choice
         options: 
-        - unmanaged
-        - managed
-        - both
+        - 'unmanaged'
+        - 'managed'
+        - 'both'
       azure-solution-package-type:
         description: Solution package type to upload to Azure blob storage (unmanaged / managed / both)
         default: managed
         type: choice
         options: 
-        - unmanaged
-        - managed
-        - both
+        - 'unmanaged'
+        - 'managed'
+        - 'both'
 
     outputs:
       solution-unique-name:
@@ -176,7 +176,7 @@ jobs:
         name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
         path: github-action/artifacts/
 
-    - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_unmanaged.zip` (unmanaged)
+    - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip` (unmanaged)
       id: release-unmanaged-solution
       if: (steps.create-release.conclusion == 'success') &&
           (needs.build.outputs.unmanaged-zip-exists == 'true') &&
@@ -187,7 +187,7 @@ jobs:
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }}
         asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-arsed-version }}.zip
-        asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_unmanaged.zip
+        asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip
         asset_content_type: application/zip
 
     - name: Upload release asset `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip` (managed)

@@ -1,7 +1,7 @@
 # Github Reusable Workflow - Build & Release & Upload CI
 > *Used within Bever.*
 
-This reusable workflow builds the project, creates a new release, and uploads the solution files to Azure blob storage.
+This is a reusable workflow that builds the project, creates a new release, and uploads the solution files to Azure blob storage.
 
 **Inputs**
 - ```node-version``` - **Optional** | **string** | Default: 16 | Node version.
@@ -20,3 +20,5 @@ This reusable workflow builds the project, creates a new release, and uploads th
 - ```release-url``` - **string** | Created release URL, the URL users can navigate to in order to view the release. | *Example: https://github.com/BeverCRM/PCF-SampleCustomComponent/releases/tag/v1.0.0*
 - ```unmanaged-zip-exists``` - **boolean** | Whether the unmanaged solution exists or not.
 - ```managed-zip-exists``` - **boolean** | Whether the managed solution exists or not.
+
+<!-- This is a custom action that builds the project, creates a new release, and deploys the solution to Azure blob storage. (used within Bever) -->

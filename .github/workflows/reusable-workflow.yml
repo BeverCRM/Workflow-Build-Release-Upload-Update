@@ -158,7 +158,7 @@ jobs:
       id: create-release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ needs.build.outputs.solution-version }}
         release_name: v${{ needs.build.outputs.solution-version }}
@@ -178,7 +178,7 @@ jobs:
           ((inputs.release-solution-package-type == 'unmanaged') || (inputs.release-solution-package-type == 'both'))
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }}
         asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-arsed-version }}.zip

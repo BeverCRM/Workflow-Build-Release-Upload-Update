@@ -42,4 +42,3 @@ jobs:
   main:
     uses: BeverCRM/Build-Release-Upload-CI-Workflow/.github/workflows/build-release-upload-ci.yml@master
 ```
-

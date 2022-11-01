@@ -1,4 +1,4 @@
-name: Build & Release & Upload CI (Reusable Workflow)
+name: Reusable Workflow - Build & Release & Upload CI
 
 on:
   workflow_call:
@@ -17,7 +17,7 @@ on:
         type: boolean
       release-solution-package-type:
         description: Solution package type to upload to release assets (none / unmanaged / managed / both)
-        default: none
+        default: managed
         type: string
       azure-solution-package-type:
         description: Solution package type to upload to Azure blob storage (unmanaged / managed / both)

@@ -21,7 +21,7 @@ This is a reusable workflow that builds the project, creates a new release, and 
 - ```unmanaged-zip-exists``` - **boolean** | Whether the unmanaged solution exists or not.
 - ```managed-zip-exists``` - **boolean** | Whether the managed solution exists or not.
 
-**Example workflow: build-release-upload-ci**
+# Example workflow: build-release-upload-ci
 > On every *push* or *pull request* on the *release* branch, run this workflow.
 
 ```yaml

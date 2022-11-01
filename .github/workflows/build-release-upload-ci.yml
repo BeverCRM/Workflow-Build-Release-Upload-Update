@@ -80,13 +80,6 @@ jobs:
         "version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version )" >> $env:GITHUB_OUTPUT
         "parsed-version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
 
-    # TODO: remove
-    - name: Show step outputs (get-solution-data)
-      run: |
-        echo "unique-name: ${{ steps.get-solution-data.outputs.unique-name }}"
-        echo "version: ${{ steps.get-solution-data.outputs.version }}"
-        echo "parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}"
-
     - name: Install dependencies
       id: install-dependecies
       run: npm ci
@@ -178,7 +171,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-arsed-version }}.zip
+        asset_path: github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip
         asset_name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip
         asset_content_type: application/zip
 
@@ -209,34 +202,6 @@ jobs:
       with:
         name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
         path: github-action/artifacts/
-
-    # - name: Get solution old version from Azure storage
-    #   id: get-solution-old-version-from-azure-storage
-    #   run: |
-    #     BlobListJson=$( az storage blob list \
-    #     --prefix "${{ needs.build.outputs.solution-unique-name }}" \
-    #     --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-    #     --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-    #     --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" )
-    #     echo "blob-list-json=$( echo $BlobListJson )" >> $GITHUB_OUTPUT
-
-    # TODO: remove
-    # - name: Show step outputs (get-solution-old-version-from-azure-storage)
-      # run: echo "${{ steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json }}"
-
-    # - name: "Notice - solution old version"
-    #   if: ${{ steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json == '[]' }}
-    #   run: echo "::notice title=Get solution old version::No blob found with name starting with \`${{ needs.build.outputs.solution-unique-name }}\`."
-
-    # - name: Parse JSON, get solution name from Azure response (if exists)
-    #   id: get-solution-old-version-name
-    #   continue-on-error: true
-    #   run: |
-    #   echo "info=${{ fromJSON(steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json)[0].name }}" >> $GITHUB_OUTPUT
-
-    # TODO: remove
-    # - name: Show step outputs (get-solution-old-version-names)
-      # run: echo "${{ steps.get-solution-old-version-names.outputs.info }}"
 
     - name: Delete solution old version files (unmanaged & managed) from Azure storage (if exists)
       id: delete-solution-old-version-both-files-from-azure-storage
@@ -314,7 +279,30 @@ jobs:
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
           --content-type application/zip \
           --overwrite true
-          
+
+
+    # - name: Get solution old version from Azure storage
+    #   id: get-solution-old-version-from-azure-storage
+    #   run: |
+    #     BlobListJson=$( az storage blob list \
+    #     --prefix "${{ needs.build.outputs.solution-unique-name }}" \
+    #     --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+    #     --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+    #     --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" )
+    #     echo "blob-list-json=$( echo $BlobListJson )" >> $GITHUB_OUTPUT
+
+    # - name: "Notice - solution old version"
+    #   if: ${{ steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json == '[]' }}
+    #   run: echo "::notice title=Get solution old version::No blob found with name starting with \`${{ needs.build.outputs.solution-unique-name }}\`."
+
+    # - name: Parse JSON, get solution name from Azure response (if exists)
+    #   id: get-solution-old-version-name
+    #   continue-on-error: true
+    #   run: |
+    #   echo "info=${{ fromJSON(steps.get-solution-old-version-from-azure-storage.outputs.blob-list-json)[0].name }}" >> $GITHUB_OUTPUT
+
+
+
     # - name: Delete solution old version from Azure storage (if exists)
     #   id: delete-solution-old-version-from-azure-storage
     #   if: (steps.get-solution-old-version-names.outputs.info != '') && (inputs.delete-old-version == 'true')

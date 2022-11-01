@@ -37,6 +37,3 @@ jobs:
   main:
     uses: BeverCRM/Build-Release-Upload-CI-Workflow/.github/workflows/build-release-upload-ci.yml@master
 ```
-
-# License
-The scripts and documentation in this project are released under the [MIT License](https://github.com/actions/create-release/blob/main/LICENSE).

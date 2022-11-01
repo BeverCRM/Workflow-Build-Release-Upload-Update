@@ -5,7 +5,7 @@ This is a reusable workflow that builds the project, creates a new release, and 
 
 ## Usage
 
-**Pre-requisites**
+**Pre-requisites** \
 Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An [example workflow](https://github.com/BeverCRM/Build-Release-Upload-CI-Workflow#example-workflow-build-release-upload-ci) is available below. For more information, reference the GitHub Help Documentation for [creating a workflow file](https://docs.github.com/en/actions/using-workflows#creating-a-workflow-file).
 
 **Inputs**

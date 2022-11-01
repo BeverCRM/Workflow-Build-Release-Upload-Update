@@ -6,7 +6,7 @@ on:
       node-version:
         description: Node verion
         default: 16
-        type: string
+        type: number
       msbuildtarget:
         description: Solution folder name
         default: Solution
@@ -18,20 +18,11 @@ on:
       release-solution-package-type:
         description: Solution package type to upload to release assets (none / unmanaged / managed / both)
         default: none
-        type: choice
-        options: 
-        - 'none'
-        - 'unmanaged'
-        - 'managed'
-        - 'both'
+        type: string
       azure-solution-package-type:
         description: Solution package type to upload to Azure blob storage (unmanaged / managed / both)
         default: managed
-        type: choice
-        options: 
-        - 'unmanaged'
-        - 'managed'
-        - 'both'
+        type: string
 
     outputs:
       solution-unique-name:

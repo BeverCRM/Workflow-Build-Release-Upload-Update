@@ -61,9 +61,9 @@ jobs:
     runs-on: windows-latest
 
     outputs:
-      solution-unique-name: ${{ needs.build.outputs.solution-unique-name }}
-      solution-version: ${{ needs.build.outputs.solution-version }}
-      solution-parsed-version: ${{ needs.build.outputs.solution-parsed-version }}
+      solution-unique-name: ${{ steps.get-solution-data.outputs.unique-name }}
+      solution-version: ${{ steps.get-solution-data.outputs.version }}
+      solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
       unmanaged-zip-exists: ${{ steps.unmanaged-zip-exists.outputs.info }}
       managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
 
@@ -86,9 +86,9 @@ jobs:
     # TODO: remove
     - name: Show step outputs (get-solution-data)
       run: |
-        echo "${{ needs.build.outputs.solution-unique-name }}"
-        echo "${{ needs.build.outputs.solution-version }}"
-        echo "${{ needs.build.outputs.solution-parsed-version }}"
+        echo "unique-name: ${{ steps.get-solution-data.outputs.unique-name }}"
+        echo "version: ${{ steps.get-solution-data.outputs.version }}"
+        echo "parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}"
 
     - name: Install dependencies
       id: install-dependecies
@@ -130,20 +130,20 @@ jobs:
       if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
       run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
 
-    - name: Rename solution files to `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip` & `${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip`
+    - name: Rename solution files to `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}.zip` & `${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip`
       id: rename-solution-files
-      run: get-childitem -path ${{ inputs.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.msbuildtarget }}', '${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}' }
+      run: get-childitem -path ${{ inputs.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.msbuildtarget }}', '${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}' }
 
     - name: Upload solution artifacts
       id: upload-solution-artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_artifacts
+        name: ${{ steps.build.outputs.solution-unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_artifacts
         path: ${{ inputs.msbuildtarget }}/bin/Release/
 
   create-release:
     needs: build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     
     outputs:
       release-id: ${{ steps.create-release.outputs.id }}
@@ -277,6 +277,47 @@ jobs:
           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
+    - name: Upload solution new version files (unmanaged & managed) to Azure storage (if exists)
+      if: inputs.azure-solution-package-type == 'both'
+      uses: Azure/cli@v1
+      with:
+        inlineScript: |
+          az storage blob upload-batch \
+          --source github-action/artifacts/ \
+          --destination "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+          --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+          --content-type application/zip \
+          --overwrite true
+
+    - name: Upload solution new version file (unmanaged) to Azure storage (if exists)
+      if: (needs.build.outputs.unmanaged-zip-exists == 'true') && (inputs.azure-solution-package-type == 'unmanaged')
+      uses: Azure/cli@v1
+      with:
+        inlineScript: |
+          az storage blob upload-batch \
+          --file "github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip" \
+          --name "${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip" \
+          --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+          --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+          --content-type application/zip \
+          --overwrite true
+
+    - name: Upload solution new version file (managed) to Azure storage (if exists)
+      if: (needs.build.outputs.managed-zip-exists == 'true') && (inputs.azure-solution-package-type == 'managed')
+      uses: Azure/cli@v1
+      with:
+        inlineScript: |
+          az storage blob upload-batch \
+          --file "github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip" \
+          --name "${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip" \
+          --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+          --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+          --content-type application/zip \
+          --overwrite true
+          
     # - name: Delete solution old version from Azure storage (if exists)
     #   id: delete-solution-old-version-from-azure-storage
     #   if: (steps.get-solution-old-version-names.outputs.info != '') && (inputs.delete-old-version == 'true')
@@ -289,19 +330,19 @@ jobs:
     #       --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
     #       --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
-    - name: Upload managed solution to Azure storage (if exists)
-      if: steps.managed-zip-exists.outputs.info == 'true'
-      uses: Azure/cli@v1
-      with:
-        inlineScript: |
-          az storage blob upload \
-          --file "github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip" \
-          --name "${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip" \
-          --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-          --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-          --content-type application/zip \
-          --overwrite true
+    # - name: Upload managed solution to Azure storage (if exists)
+    #   if: steps.managed-zip-exists.outputs.info == 'true'
+    #   uses: Azure/cli@v1
+    #   with:
+    #     inlineScript: |
+    #       az storage blob upload \
+    #       --file "github-action/artifacts/${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}_managed.zip" \
+    #       --name "${{ needs.build.outputs.solution-unique-name }}_${{ needs.build.outputs.solution-parsed-version }}.zip" \
+    #       --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+    #       --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+    #       --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+    #       --content-type application/zip \
+    #       --overwrite true
 
 
 

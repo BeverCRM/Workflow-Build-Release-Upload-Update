@@ -198,9 +198,12 @@ jobs:
       
     - name: Show inputs
       run: |
-        echo "AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}"
-        echo "AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}"
-        echo "AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+        echo "AZURE_STORAGE_CONTAINER_NAME: ${{ $AZURE_STORAGE_CONTAINER_NAME }}"
+        echo "AZURE_STORAGE_ACCOUNT_NAME: ${{ $AZURE_STORAGE_ACCOUNT_NAME }}"
+        echo "AZURE_STORAGE_CONNECTION_STRING: ${{ $AZURE_STORAGE_CONNECTION_STRING }}"
+      # echo "AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}"
+      # echo "AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}"
+      # echo "AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
     - name: Download solution artifacts
       id: download-solution-artifacts

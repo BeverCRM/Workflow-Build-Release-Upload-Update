@@ -40,5 +40,5 @@ name: Create a new release and upload the solution to Azure blob storage CI
 
 jobs:
   main:
-    uses: BeverCRM/Build-Release-Upload-CI-Workflow/.github/workflows/build-release-upload-ci.yml@master
+    uses: BeverCRM/Workflow-Build-Release-Upload-CI/.github/workflows/build-release-upload-ci.yml@master
 ```

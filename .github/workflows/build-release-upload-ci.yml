@@ -196,15 +196,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       
-    - name: Show inputs
-      run: |
-        echo "AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}"
-        echo "AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}"
-        echo "AZURE_STORAGE_CONNECTION_STRING: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
-      # echo "AZURE_STORAGE_CONTAINER_NAME: ${{ $AZURE_STORAGE_CONTAINER_NAME }}"
-      # echo "AZURE_STORAGE_ACCOUNT_NAME: ${{ $AZURE_STORAGE_ACCOUNT_NAME }}"
-      # echo "AZURE_STORAGE_CONNECTION_STRING: ${{ $AZURE_STORAGE_CONNECTION_STRING }}"
-
     - name: Download solution artifacts
       id: download-solution-artifacts
       uses: actions/download-artifact@v3
@@ -259,7 +250,7 @@ jobs:
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
           --content-type application/zip \
-        # --overwrite true
+          --overwrite true
 
     - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
       if: (inputs.azure-solution-package-type == 'both') && (needs.build.outputs.unmanaged-zip-exists == 'false')
@@ -280,7 +271,7 @@ jobs:
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
           --content-type application/zip \
-        # --overwrite true
+          --overwrite true
 
     - name: Upload solution new version file (managed) to Azure storage (if exists)
       if: (needs.build.outputs.managed-zip-exists == 'true') && (inputs.azure-solution-package-type == 'managed')
@@ -293,4 +284,4 @@ jobs:
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
           --content-type application/zip \
-        # --overwrite true
+          --overwrite true

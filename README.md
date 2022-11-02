@@ -42,3 +42,5 @@ jobs:
   main:
     uses: BeverCRM/Workflow-Build-Release-Upload-CI/.github/workflows/build-release-upload-ci.yml@master
 ```
+
+**For more information on how to create a PCF repository see [BeverCRM/PCF-Template](https://github.com/BeverCRM/PCF-Template).**

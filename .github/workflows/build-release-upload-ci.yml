@@ -210,7 +210,7 @@ jobs:
       with:
         inlineScript: |
           az storage blob delete-batch \
-          --pattern "${{ steps.get-solution-old-version-name.outputs.info }}" \
+          --pattern "${{ needs.build.outputs.solution-unique-name }}" \
           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
@@ -222,7 +222,7 @@ jobs:
       with:
         inlineScript: |
           az storage blob delete-batch \
-          --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_+([0-9])_+([0-9])_+([0-9]).zip" \
+          --pattern "${{ needs.build.outputs.solution-unique-name }}_+([0-9])_+([0-9])_+([0-9]).zip" \
           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
@@ -234,7 +234,7 @@ jobs:
       with:
         inlineScript: |
           az storage blob delete-batch \
-          --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_+([0-9])_+([0-9])_+([0-9])_managed.zip" \
+          --pattern "${{ needs.build.outputs.solution-unique-name }}_+([0-9])_+([0-9])_+([0-9])_managed.zip" \
           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"

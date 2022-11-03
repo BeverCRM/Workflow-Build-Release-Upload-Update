@@ -227,6 +227,11 @@ jobs:
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
+    - name: Show inputs
+      run: |
+        echo "delete-old-version: ${{ inputs.delete-old-version }}"
+        echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
+
     - name: Delete solution old version file (managed) from Azure storage (if exists)
       id: delete-solution-old-version-managed-file-from-azure-storage
       if: (inputs.delete-old-version == 'true') && (inputs.azure-solution-package-type == 'managed')
@@ -240,6 +245,7 @@ jobs:
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
     - name: Upload solution new version files (unmanaged & managed) to Azure storage (if exists)
+      id: upload-solution-old-version-both-files-to-azure-storage
       if: inputs.azure-solution-package-type == 'both'
       uses: Azure/cli@v1
       with:
@@ -261,6 +267,7 @@ jobs:
       run: Write-Output "::warning title=Upload unmanaged & managed solutions::Managed solution doesn't exist."
 
     - name: Upload solution new version file (unmanaged) to Azure storage (if exists)
+      id: upload-solution-old-version-unmanaged-file-to-azure-storage
       if: (needs.build.outputs.unmanaged-zip-exists == 'true') && (inputs.azure-solution-package-type == 'unmanaged')
       uses: Azure/cli@v1
       with:
@@ -274,6 +281,7 @@ jobs:
           --overwrite true
 
     - name: Upload solution new version file (managed) to Azure storage (if exists)
+      id: upload-solution-old-version-managed-file-to-azure-storage
       if: (needs.build.outputs.managed-zip-exists == 'true') && (inputs.azure-solution-package-type == 'managed')
       uses: Azure/cli@v1
       with:

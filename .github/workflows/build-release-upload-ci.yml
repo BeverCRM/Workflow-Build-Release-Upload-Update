@@ -205,7 +205,7 @@ jobs:
 
     - name: Delete solution old version files (unmanaged & managed) from Azure storage (if exists)
       id: delete-solution-old-version-both-files-from-azure-storage
-      if: ${{ inputs.delete-old-version == 'true' && inputs.azure-solution-package-type == 'both' }}
+      if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'both' }}
       uses: Azure/cli@v1
       with:
         inlineScript: |
@@ -217,7 +217,7 @@ jobs:
 
     - name: Delete solution old version file (unmanaged) from Azure storage (if exists)
       id: delete-solution-old-version-unmanaged-file-from-azure-storage
-      if: ${{ inputs.delete-old-version == 'true' && inputs.azure-solution-package-type == 'unmanaged' }}
+      if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'unmanaged' }}
       uses: Azure/cli@v1
       with:
         inlineScript: |
@@ -229,7 +229,7 @@ jobs:
 
     - name: Delete solution old version file (managed) from Azure storage (if exists)
       id: delete-solution-old-version-managed-file-from-azure-storage
-      if: ${{ inputs.delete-old-version == 'true' && inputs.azure-solution-package-type == 'managed' }}
+      if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'managed' }}
       uses: Azure/cli@v1
       with:
         inlineScript: |

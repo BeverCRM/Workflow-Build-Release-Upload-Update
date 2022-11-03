@@ -222,10 +222,11 @@ jobs:
       with:
         inlineScript: |
           az storage blob delete-batch \
-          --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_*_[!managed].zip" \
+          --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_+([0-9])_+([0-9])_+([0-9]).zip" \
           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+        # --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_*_[!managed].zip" \
 
     # TODO: remove
     - name: Show inputs
@@ -240,10 +241,12 @@ jobs:
       with:
         inlineScript: |
           az storage blob delete-batch \
-          --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_*_managed.zip" \
+          --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_+([0-9])_+([0-9])_+([0-9])_managed.zip" \
           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+        # --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_*@(_managed).zip" \
+        # --pattern "${{ steps.get-solution-old-version-name.outputs.info }}_*_managed.zip" \
 
     - name: Upload solution new version files (unmanaged & managed) to Azure storage (if exists)
       id: upload-solution-old-version-both-files-to-azure-storage

@@ -229,10 +229,7 @@ jobs:
 
     - name: Delete solution old version file (managed) from Azure storage (if exists)
       id: delete-solution-old-version-managed-file-from-azure-storage
-      # if: ${{ inputs.delete-old-version == 'true' && inputs.azure-solution-package-type == 'managed' }}
-      # if: ${{ inputs.delete-old-version == true }}
-      # if: ${{ inputs.delete-old-version == 'true' }}
-      if: ${{ inputs.azure-solution-package-type == 'managed' }}
+      if: ${{ inputs.delete-old-version == 'true' && inputs.azure-solution-package-type == 'managed' }}
       uses: Azure/cli@v1
       with:
         inlineScript: |

@@ -227,14 +227,15 @@ jobs:
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
+    # TODO: remove
     - name: Show inputs
       run: |
         echo "delete-old-version: ${{ inputs.delete-old-version }}"
         echo "azure-solution-package-type: ${{ inputs.azure-solution-package-type }}"
 
+      # if: (inputs.delete-old-version == 'true') && (inputs.azure-solution-package-type == 'managed')
     - name: Delete solution old version file (managed) from Azure storage (if exists)
       id: delete-solution-old-version-managed-file-from-azure-storage
-      if: (inputs.delete-old-version == 'true') && (inputs.azure-solution-package-type == 'managed')
       uses: Azure/cli@v1
       with:
         inlineScript: |

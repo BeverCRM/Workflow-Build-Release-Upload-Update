@@ -95,7 +95,7 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>release-id</td>
     <td>string</td>
     <td>Created release ID.</td>
-    <td>SampleCustomComponent</td>
+    <td></td>
   </tr>
   <tr>
     <td>release-name</td>

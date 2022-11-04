@@ -210,7 +210,7 @@ jobs:
       with:
         inlineScript: |
           az storage blob delete-batch \
-          --pattern "${{ needs.build.outputs.solution-unique-name }}" \
+          --pattern "${{ needs.build.outputs.solution-unique-name }}_*.zip" \
           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"

@@ -55,7 +55,7 @@ on:
 
 jobs:
   check-inputs-and-secrets:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Check inputs
@@ -73,6 +73,7 @@ jobs:
         fi
 
   build:
+    needs: check-inputs-and-secrets
     runs-on: windows-latest
 
     outputs:

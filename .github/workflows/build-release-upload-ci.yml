@@ -54,38 +54,8 @@ on:
         value: ${{ jobs.main.outputs.managed-zip-exists }}
 
 jobs:
-  check-inputs-and-secrets:
-    runs-on: ubuntu-latest
-
-    outputs:
-      status: ${{ steps.check-inputs.outputs.status }}
-
-    steps:
-    - name: Check inputs
-      id: check-inputs
-      run: |
-        ReleaseOptions=("none" "unmanaged" "managed" "both")
-        AzureOptions=("unmanaged" "managed" "both")
-        Status="success"
-
-        if [[ ! ${ReleaseOptions[*]} =~ "${{ inputs.release-solution-package-type }}" ]]
-        then
-          echo "::error title=Invalid input parameter \`release-solution-package-type\`::\`release-solution-package-type\` must be one of the following options: \`none\`, \`unmanaged\`, \`managed\`, \`both\`."
-          Status="failure"
-        fi
-        
-        if [[ ! ${AzureOptions[*]} =~ "${{ inputs.azure-solution-package-type }}" ]]
-        then
-          echo "::error title=Invalid input parameter \`azure-solution-package-type\`::\`azure-solution-package-type\` must be one of the following options: \`unmanaged\`, \`managed\`, \`both\`."
-          Status="failure"
-        fi
-
-        echo "status=$Status" >> $GITHUB_OUTPUT
-
   build:
-    needs: check-inputs-and-secrets
     runs-on: windows-latest
-    if: ${{ needs.check-inputs-and-secrets.outputs.status == 'success' }}
 
     outputs:
       solution-unique-name: ${{ steps.get-solution-data.outputs.unique-name }}

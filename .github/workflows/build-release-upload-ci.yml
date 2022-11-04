@@ -54,6 +54,24 @@ on:
         value: ${{ jobs.main.outputs.managed-zip-exists }}
 
 jobs:
+  check-inputs-and-secrets:
+    runs-on: windows-latest
+
+    steps:
+    - name: Check inputs
+      id: check-inputs
+      run: |
+        ReleaseOptions=("none" "unmanaged" "managed" "both")
+        AzureOptions=("unmanaged" "managed" "both")
+
+        if [[ ! ${ReleaseOptions[*]} =~ "${{ inputs.release-solution-package-type }}" ]]
+        then echo "::error title=Invalid input parameter `release-solution-package-type`::`release-solution-package-type` must be one of the following options: `none`, `unmanaged`, `managed`, `both`."
+        fi
+        
+        if [[ ! ${AzureOptions[*]} =~ "${{ inputs.azure-solution-package-type }}" ]]
+        then echo "::error title=Invalid input parameter `azure-solution-package-type`::`azure-solution-package-type` must be one of the following options: `unmanaged`, `managed`, `both`."
+        fi
+
   build:
     runs-on: windows-latest
 

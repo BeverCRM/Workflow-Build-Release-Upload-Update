@@ -139,7 +139,7 @@ name: Create a new release and upload the solution to Azure blob storage CI
 
 on:
   push:
-    branches: [ release ]
+    branches: release
 
 jobs:
   main:

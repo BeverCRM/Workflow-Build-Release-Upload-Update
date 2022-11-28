@@ -147,9 +147,10 @@ jobs:
     secrets: inherit
 ```
 
-> ***Note*** **You need to have a CHANGELOG.md file in the root directory for the created release description.**
-
 <br>
+<br>
+
+> ***Note*** **You need to have a CHANGELOG.md file in the root directory for the created release description.**
 
 ---
 

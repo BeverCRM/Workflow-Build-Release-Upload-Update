@@ -7,10 +7,10 @@ on:
         description: Node verion
         default: 16
         type: number
-      msbuildtarget:
-        description: Solution folder name
-        default: Solution
-        type: string
+      # msbuildtarget:
+      #   description: Solution folder name
+      #   default: --control-name
+      #   type: string
       delete-old-version:
         description: Delete the old version of the solution from Azure blob storage
         default: true
@@ -72,13 +72,15 @@ jobs:
       with:
         node-version: ${{ inputs.node-verion }}
 
-    - name: Get solution unique name and version
+    - name: Get solution data from `ControlManifest.Input.xml`
       id: get-solution-data
       run: |
-        [xml]$XmlDocument=Get-Content -Path "${{ inputs.msbuildtarget }}\src\Other\Solution.xml"
-        "unique-name=$( $XmlDocument.ImportExportXml.SolutionManifest.UniqueName )" >> $env:GITHUB_OUTPUT
-        "version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version )" >> $env:GITHUB_OUTPUT
-        "parsed-version=$( $XmlDocument.ImportExportXml.SolutionManifest.Version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
+        $ControlManifest=Get-ChildItem "*/ControlManifest.input.xml"
+        [xml]$XmlDocument=Get-Content -Path $ControlManifest.FullName
+        "unique-name=$( $XmlDocument.manifest.control.constructor )" >> $env:GITHUB_OUTPUT
+        "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
+        "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
+      # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
     - name: Install dependencies
       id: install-dependecies
@@ -94,23 +96,30 @@ jobs:
         npm run clean --if-present
         npm run build -- --buildMode production --if-present
 
+    # - name: Create solution destination folder
+    #   id: create-solution-destination-folder
+    #   run: |
+    #     $path = "github-action/solution/${{ steps.get-solution-data.outputs.unique-name }}"
+    #     md $path
+    #     "msbuildtarget=$path" >> $env:GITHUB_OUTPUT
+
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
 
     - name: MSBuild
       id: msbuild
-      working-directory: ${{ inputs.msbuildtarget }}
+      working-directory: ${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}
       run: msbuild /t:rebuild /restore /p:configuration=release
 
-    - name: Check if solution exists `${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}.zip` (unmanaged)
+    - name: Check if solution exists `${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}/bin/Release/${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}.zip` (unmanaged)
       id: unmanaged-zip-exists
       run: |
-        "info=$( "$(Test-Path ${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+        "info=$( "$(Test-Path ${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}/bin/Release/${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-    - name: Check if solution exists `${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}_managed.zip` (managed)
+    - name: Check if solution exists `${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}/bin/Release/${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}_managed.zip` (managed)
       id: managed-zip-exists
       run: |
-        "info=$( "$(Test-Path ${{ inputs.msbuildtarget }}/bin/Release/${{ inputs.msbuildtarget }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+        "info=$( "$(Test-Path ${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}}/bin/Release/${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
     - name: "Notice - unmanaged solution"
       if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
@@ -122,14 +131,14 @@ jobs:
 
     - name: Rename solution files to `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}.zip` & `${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip`
       id: rename-solution-files
-      run: get-childitem -path ${{ inputs.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.msbuildtarget }}', '${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}' }
+      run: get-childitem -path ${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}/bin/Release | rename-item -newname { $_.name -replace '${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}', '${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}' }
 
     - name: Upload solution artifacts
       id: upload-solution-artifacts
       uses: actions/upload-artifact@v3
       with:
         name: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_artifacts
-        path: ${{ inputs.msbuildtarget }}/bin/Release/
+        path: ${{ steps.create-solution-destination-folder.outputs.msbuildtarget }}/bin/Release/
 
   create-release:
     needs: build

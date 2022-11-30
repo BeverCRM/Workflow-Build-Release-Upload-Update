@@ -161,19 +161,19 @@ jobs:
 
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.City.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Country.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Line1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.PostalCode.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Telephone1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
 
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress = "${{ env.publisher-email }}"
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl = "${{ env.publisher-website }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Telephone1.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-phone }}"))
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.City.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-city }}"))
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Country.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-country }}"))
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Line1.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-street }}"))
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.PostalCode.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-postal-code }}"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-phone }}"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-city }}"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-country }}"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-street }}"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode.AppendChild($XmlDocument.CreateTextNode("${{ env.publisher-postal-code }}"))
 
       # $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Telephone1 = "${{ env.publisher-phone }}"
       # $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.City = "${{ env.publisher-city }}"

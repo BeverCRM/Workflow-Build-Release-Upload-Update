@@ -5,8 +5,9 @@ on:
     inputs:
       control-description:
         description: Control description (default is control name)
-        default: --control-name
         type: string
+        # description: Control description (default is control name)
+        # default: --control-name
       node-version:
         description: Node verion
         default: 16
@@ -123,12 +124,12 @@ jobs:
         "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
       # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
-    - name: Override input defaults
-      id: override-input-defaults
-      run: |
-        if (${{ inputs.control-description }} -eq "--control-name") {
-          "control-description=${{ steps.get-solution-data.outputs.unique-nam }}" >> $env:GITHUB_OUTPUT
-        }
+    # - name: Override input defaults
+    #   id: override-input-defaults
+    #   run: |
+    #     if (${{ inputs.control-description }} -eq "--control-name") {
+    #       "control-description=${{ steps.get-solution-data.outputs.unique-nam }}" >> $env:GITHUB_OUTPUT
+    #     }
 
     - name: Update `Solution.xml`
       id: update-solution-xml
@@ -153,7 +154,7 @@ jobs:
         $XmlDocument.ImportExportXml.SolutionManifest.Managed = "2"
         
         $XmlDocument.ImportExportXml.SolutionManifest.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
-        $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ steps.override-input-defaults.outputs.control-description }}")
+        $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ inputs.control-description }}")
         $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
 
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"

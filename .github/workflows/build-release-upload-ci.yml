@@ -3,6 +3,10 @@ name: Reusable Workflow - Build & Release & Upload CI
 on:
   workflow_call:
     inputs:
+      control-description:
+        description: Control description (default is control name)
+        default: --control-name
+        type: string
       node-version:
         description: Node verion
         default: 16
@@ -54,7 +58,44 @@ on:
         value: ${{ jobs.main.outputs.managed-zip-exists }}
 
 jobs:
+  input-validation:
+    runs-on: ubuntu-latest
+
+    outputs:
+      ok: ${{ steps.input-parameters-validation.outputs.ok }}
+      message: ${{ steps.input-parameters-validation.outputs.message }}
+      control-description: ${{ steps.input-parameters-validation.outputs.message }}
+
+    steps:
+    - name: Validation of input parameters
+      id: input-parameters-validation
+      run: |
+        releaseSolutionPackageTypes="none unmanaged managed both"
+        azureSolutionPackageTypes="unmanaged managed both"
+        
+        ok=true
+        message=""
+
+        if [[ $( echo ${{ inputs.solution-folder }} ) == "" ]]
+          then
+            ok=false
+            message="The parameter \`solution-folder\` can not be blank."
+        elif [[ !($releaseSolutionPackageTypes =~ (" "|^)"${{ inputs.release-solution-package-type }}"(" "|$)) ]]
+          then
+            ok=false
+            message="'${{ inputs.release-solution-package-type }}' is not a valid value for \`release-solution-package-type\` parameter."
+        elif [[ !($azureSolutionPackageTypes =~ (" "|^)"${{ inputs.azure-solution-package-type }}"(" "|$)) ]]
+          then
+            ok=false
+            message="'${{ inputs.azure-solution-package-type }}' is not a valid value for \`azure-solution-package-type\` parameter."
+        fi
+
+        echo "ok=$ok" >> $GITHUB_OUTPUT
+        echo "message=$message" >> $GITHUB_OUTPUT
+
   build:
+    needs: input-validation
+    if: ${{ needs.input-validation.outputs.ok }}
     runs-on: windows-latest
 
     outputs:
@@ -81,6 +122,64 @@ jobs:
         "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
         "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
       # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
+
+    - name: Override input defaults
+      id: override-input-defaults
+      run: |
+        if (${{ inputs.control-description }} -eq "--control-name") {
+          "control-description=${{ steps.get-solution-data.outputs.unique-nam }}" >> $env:GITHUB_OUTPUT
+        }
+
+    - name: Update Solution.xml
+      id: update-solution-xml
+      env:
+        publisher-name: 'Bever'
+        publisher-prefix: 'bvr'
+        publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'
+        publisher-email: 'info@bevercrm.com'
+        publisher-phone: '+374 (77) 590071'
+        publisher-website: 'https://bevercrm.com'
+        publisher-city: 'Yerevan'
+        publisher-country: 'Armenia'
+        publisher-street: 'Abelian 6/4'
+        publisher-postal-code: '0038'
+      run: |
+        $FileName = ${{ inputs.solution-folder }}/src/Other/Solution.xml
+        [xml]$XmlDocument = Get-Content -Path $FileName
+        $XmlDocument.ImportExportXml.SolutionManifest.UniqueName = "${{ steps.get-solution-data.outputs.unique-name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.LocalizedNames.LocalizedName.description = "${{ steps.get-solution-data.outputs.unique-name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Version = "${{ steps.get-solution-data.outputs.version }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Managed = "2"
+        
+        $XmlDocument.ImportExportXml.SolutionManifest.SelectSingleNode('Descriptions').AppendChild($XmlDocument.CreateElement("Description"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode('Description').SetAttribute("description", "${{ steps.override-input-defaults.outputs.control-description }}")
+        $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode('Description').SetAttribute("languagecode", "1033")
+
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.LocalizedNames.LocalizedName.description = "${{ env.publisher-name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.CustomizationPrefix = "${{ env.publisher-prefix }}"
+
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.City.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Country.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Line1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.PostalCode.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Telephone1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress = "${{ env.publisher-email }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl = "${{ env.publisher-website }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Telephone1 = "${{ env.publisher-phone }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.City = "${{ env.publisher-city }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Country = "${{ env.publisher-country }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.Line1 = "${{ env.publisher-street }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address.PostalCode = "${{ env.publisher-postal-code }}"
+
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SelectSingleNode('Descriptions').AppendChild($XmlDocument.CreateElement("Description"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode('Description').SetAttribute("description", "${{ env.publisher-description }}")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode('Description').SetAttribute("languagecode", "1033")
+
+        $XmlDocument.Save($FileName)
 
     - name: Install dependencies
       id: install-dependecies

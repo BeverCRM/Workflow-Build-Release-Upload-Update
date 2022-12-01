@@ -80,15 +80,15 @@ jobs:
         if [[ $( echo ${{ inputs.solution-folder }} ) == "" ]]
           then
             ok=false
-            message="The parameter \`solution-folder\` can not be blank."
+            message="The parameter `solution-folder` can not be blank."
         elif [[ !($releaseSolutionPackageTypes =~ (" "|^)"${{ inputs.release-solution-package-type }}"(" "|$)) ]]
           then
             ok=false
-            message="'${{ inputs.release-solution-package-type }}' is not a valid value for \`release-solution-package-type\` parameter."
+            message="'${{ inputs.release-solution-package-type }}' is not a valid value for `release-solution-package-type` parameter."
         elif [[ !($azureSolutionPackageTypes =~ (" "|^)"${{ inputs.azure-solution-package-type }}"(" "|$)) ]]
           then
             ok=false
-            message="'${{ inputs.azure-solution-package-type }}' is not a valid value for \`azure-solution-package-type\` parameter."
+            message="'${{ inputs.azure-solution-package-type }}' is not a valid value for `azure-solution-package-type` parameter."
         fi
 
         echo "ok=$ok" >> $GITHUB_OUTPUT

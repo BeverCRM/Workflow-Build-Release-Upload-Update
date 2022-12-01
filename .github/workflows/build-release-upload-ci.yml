@@ -96,7 +96,7 @@ jobs:
 
   build:
     needs: input-validation
-    if: ${{ needs.input-validation.outputs.ok }}
+    if: ${{ needs.input-validation.outputs.ok == true }}
     runs-on: windows-latest
 
   #   outputs:

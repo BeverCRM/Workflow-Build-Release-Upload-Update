@@ -104,146 +104,140 @@ jobs:
     if: ${{ needs.input-validation.outputs.ok == true }}
     runs-on: windows-latest
 
-  #   outputs:
-  #     solution-unique-name: ${{ steps.get-solution-data.outputs.unique-name }}
-  #     solution-version: ${{ steps.get-solution-data.outputs.version }}
-  #     solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
-  #     unmanaged-zip-exists: ${{ steps.unmanaged-zip-exists.outputs.info }}
-  #     managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
+    outputs:
+      solution-unique-name: ${{ steps.get-solution-data.outputs.unique-name }}
+      solution-version: ${{ steps.get-solution-data.outputs.version }}
+      solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
+      unmanaged-zip-exists: ${{ steps.unmanaged-zip-exists.outputs.info }}
+      managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
 
     steps:
-    - name: Test
-      id: test
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js ${{ inputs.node-verion }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node-verion }}
+
+    - name: Get solution data from `ControlManifest.Input.xml`
+      id: get-solution-data
       run: |
-        echo "ok: ${{ needs.input-validation.outputs.ok }}"
-        echo "message: ${{ needs.input-validation.outputs.message }}"
+        $ControlManifest=Get-ChildItem "*/ControlManifest.input.xml"
+        [xml]$XmlDocument=Get-Content -Path $ControlManifest.FullName
+        "unique-name=$( $XmlDocument.manifest.control.constructor )" >> $env:GITHUB_OUTPUT
+        "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
+        "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
+      # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
-  #   - uses: actions/checkout@v3
+    # - name: Override input defaults
+    #   id: override-input-defaults
+    #   run: |
+    #     if (${{ inputs.control-description }} -eq "--control-name") {
+    #       "control-description=${{ steps.get-solution-data.outputs.unique-nam }}" >> $env:GITHUB_OUTPUT
+    #     }
 
-  #   - name: Setup Node.js ${{ inputs.node-verion }}
-  #     uses: actions/setup-node@v3
-  #     with:
-  #       node-version: ${{ inputs.node-verion }}
+    - name: Update `Solution.xml`
+      id: update-solution-xml
+      env:
+        publisher-name: 'Bever'
+        publisher-prefix: 'bvr'
+        publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'
+        publisher-email: 'info@bevercrm.com'
+        publisher-phone: '+374 (77) 590071'
+        publisher-website: 'https://bevercrm.com'
+        publisher-city: 'Yerevan'
+        publisher-country: 'Armenia'
+        publisher-street: 'Abelian 6/4'
+        publisher-postal-code: '0038'
+      run: |
+        $FileName = "${{ inputs.solution-folder }}/src/Other/Solution.xml"
+        [xml]$XmlDocument = Get-Content -Path $FileName
 
-  #   - name: Get solution data from `ControlManifest.Input.xml`
-  #     id: get-solution-data
-  #     run: |
-  #       $ControlManifest=Get-ChildItem "*/ControlManifest.input.xml"
-  #       [xml]$XmlDocument=Get-Content -Path $ControlManifest.FullName
-  #       "unique-name=$( $XmlDocument.manifest.control.constructor )" >> $env:GITHUB_OUTPUT
-  #       "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
-  #       "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
-  #     # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
-
-  #   # - name: Override input defaults
-  #   #   id: override-input-defaults
-  #   #   run: |
-  #   #     if (${{ inputs.control-description }} -eq "--control-name") {
-  #   #       "control-description=${{ steps.get-solution-data.outputs.unique-nam }}" >> $env:GITHUB_OUTPUT
-  #   #     }
-
-  #   - name: Update `Solution.xml`
-  #     id: update-solution-xml
-  #     env:
-  #       publisher-name: 'Bever'
-  #       publisher-prefix: 'bvr'
-  #       publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'
-  #       publisher-email: 'info@bevercrm.com'
-  #       publisher-phone: '+374 (77) 590071'
-  #       publisher-website: 'https://bevercrm.com'
-  #       publisher-city: 'Yerevan'
-  #       publisher-country: 'Armenia'
-  #       publisher-street: 'Abelian 6/4'
-  #       publisher-postal-code: '0038'
-  #     run: |
-  #       $FileName = "${{ inputs.solution-folder }}/src/Other/Solution.xml"
-  #       [xml]$XmlDocument = Get-Content -Path $FileName
-
-  #       $XmlDocument.ImportExportXml.SolutionManifest.UniqueName = "${{ steps.get-solution-data.outputs.unique-name }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.LocalizedNames.LocalizedName.description = "${{ steps.get-solution-data.outputs.unique-name }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Version = "${{ steps.get-solution-data.outputs.version }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Managed = "2"
+        $XmlDocument.ImportExportXml.SolutionManifest.UniqueName = "${{ steps.get-solution-data.outputs.unique-name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.LocalizedNames.LocalizedName.description = "${{ steps.get-solution-data.outputs.unique-name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Version = "${{ steps.get-solution-data.outputs.version }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Managed = "2"
         
-  #       $XmlDocument.ImportExportXml.SolutionManifest.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ inputs.control-description }}")
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
+        $XmlDocument.ImportExportXml.SolutionManifest.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ inputs.control-description }}")
+        $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
 
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.LocalizedNames.LocalizedName.description = "${{ env.publisher-name }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.CustomizationPrefix = "${{ env.publisher-prefix }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.LocalizedNames.LocalizedName.description = "${{ env.publisher-name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.CustomizationPrefix = "${{ env.publisher-prefix }}"
 
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
 
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress = "${{ env.publisher-email }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl = "${{ env.publisher-website }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1 = "${{ env.publisher-phone }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City = "${{ env.publisher-city }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country = "${{ env.publisher-country }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1 = "${{ env.publisher-street }}"
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode = "${{ env.publisher-postal-code }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress = "${{ env.publisher-email }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl = "${{ env.publisher-website }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1 = "${{ env.publisher-phone }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City = "${{ env.publisher-city }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country = "${{ env.publisher-country }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1 = "${{ env.publisher-street }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode = "${{ env.publisher-postal-code }}"
 
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ env.publisher-description }}")
-  #       $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ env.publisher-description }}")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
 
-  #       $XmlDocument.Save($FileName)
+        $XmlDocument.Save($FileName)
 
-  #   - name: Install dependencies
-  #     id: install-dependecies
-  #     run: npm ci
+    - name: Install dependencies
+      id: install-dependecies
+      run: npm ci
 
-  #   - name: Refresh types
-  #     id: refresh-types
-  #     run: npm run refreshTypes
+    - name: Refresh types
+      id: refresh-types
+      run: npm run refreshTypes
 
-  #   - name: Build project
-  #     id: build-project
-  #     run: |
-  #       npm run clean --if-present
-  #       npm run build -- --buildMode production --if-present
+    - name: Build project
+      id: build-project
+      run: |
+        npm run clean --if-present
+        npm run build -- --buildMode production --if-present
 
-  #   - name: Setup MSBuild
-  #     uses: microsoft/setup-msbuild@v1
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
 
-  #   - name: MSBuild
-  #     id: msbuild
-  #     working-directory: ${{ inputs.solution-folder }}
-  #     run: msbuild /t:rebuild /restore /p:configuration=release
+    - name: MSBuild
+      id: msbuild
+      working-directory: ${{ inputs.solution-folder }}
+      run: msbuild /t:rebuild /restore /p:configuration=release
 
-  #   - name: Check if solution exists `${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
-  #     id: unmanaged-zip-exists
-  #     run: |
-  #       "info=$( "$(Test-Path ${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+    - name: Check if solution exists `${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
+      id: unmanaged-zip-exists
+      run: |
+        "info=$( "$(Test-Path ${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-  #   - name: Check if solution exists `${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
-  #     id: managed-zip-exists
-  #     run: |
-  #       "info=$( "$(Test-Path ${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+    - name: Check if solution exists `${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
+      id: managed-zip-exists
+      run: |
+        "info=$( "$(Test-Path ${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-  #   - name: "Notice - unmanaged solution"
-  #     if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
-  #     run: Write-Output "::notice title=Unmanaged solution::Unmanaged solution doesn't exist."
+    - name: "Notice - unmanaged solution"
+      if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
+      run: Write-Output "::notice title=Unmanaged solution::Unmanaged solution doesn't exist."
 
-  #   - name: "Notice - managed solution"
-  #     if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
-  #     run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
+    - name: "Notice - managed solution"
+      if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
+      run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
 
-  #   - name: Rename solution files to `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}.zip` & `${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip`
-  #     id: rename-solution-files
-  #     run: get-childitem -path ${{ inputs.solution-folder }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}' }
+    - name: Rename solution files to `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}.zip` & `${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip`
+      id: rename-solution-files
+      run: get-childitem -path ${{ inputs.solution-folder }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}' }
 
-  #   - name: Upload solution artifacts
-  #     id: upload-solution-artifacts
-  #     uses: actions/upload-artifact@v3
-  #     with:
-  #       name: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_artifacts
-  #       path: ${{ inputs.solution-folder }}/bin/Release/
+    - name: Upload solution artifacts
+      id: upload-solution-artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_artifacts
+        path: ${{ inputs.solution-folder }}/bin/Release/
 
   # create-release:
   #   needs: build

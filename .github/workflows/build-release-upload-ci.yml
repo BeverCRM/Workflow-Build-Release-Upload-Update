@@ -97,7 +97,7 @@ jobs:
       if: ${{ steps.input-parameters-validation.outputs.ok == 'false' }}
       run: |
         echo "::error title=Input validation::${{ steps.input-parameters-validation.outputs.message }}"
-        exit -1
+        exit 1
 
   build:
     needs: input-validation

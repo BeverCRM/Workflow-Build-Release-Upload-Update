@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       control-description:
-        description: Control description (default is control name)
+        description: Control description
         type: string
         # description: Control description (default is control name)
         # default: --control-name
@@ -145,7 +145,7 @@ jobs:
         publisher-street: 'Abelian 6/4'
         publisher-postal-code: '0038'
       run: |
-        $FileName = ${{ inputs.solution-folder }}/src/Other/Solution.xml
+        $FileName = "${{ inputs.solution-folder }}/src/Other/Solution.xml"
         [xml]$XmlDocument = Get-Content -Path $FileName
 
         $XmlDocument.ImportExportXml.SolutionManifest.UniqueName = "${{ steps.get-solution-data.outputs.unique-name }}"

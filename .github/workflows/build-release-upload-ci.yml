@@ -65,7 +65,6 @@ jobs:
     outputs:
       ok: ${{ steps.input-parameters-validation.outputs.ok }}
       message: ${{ steps.input-parameters-validation.outputs.message }}
-      control-description: ${{ steps.input-parameters-validation.outputs.message }}
 
     steps:
     - name: Validation of input parameters
@@ -93,6 +92,10 @@ jobs:
 
         echo "ok=$ok" >> $GITHUB_OUTPUT
         echo "message=$message" >> $GITHUB_OUTPUT
+
+    - name: "Notice - unmanaged solution"
+      if: ${{ steps.input-parameters-validation.outputs.ok == false }}
+      run: echo "::error title=Input validation::${{ steps.input-parameters-validation.outputs.message }}"
 
   build:
     needs: input-validation

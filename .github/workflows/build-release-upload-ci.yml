@@ -9,7 +9,7 @@ on:
         # description: Control description (default is control name)
         # default: --control-name
       node-version:
-        description: Node verion
+        description: Node version
         default: 16
         type: number
       solution-folder:

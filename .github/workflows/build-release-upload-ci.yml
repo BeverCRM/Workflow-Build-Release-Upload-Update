@@ -110,8 +110,8 @@ jobs:
     - name: Test
       id: test
       run: |
-        echo "ok: ${{ needs.input-validation.ok }}"
-        echo "message: ${{ needs.input-validation.message }}"
+        echo "ok: ${{ needs.input-validation.outputs.ok }}"
+        echo "message: ${{ needs.input-validation.outputs.message }}"
 
   #   - uses: actions/checkout@v3
 

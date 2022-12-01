@@ -213,7 +213,7 @@ jobs:
     - name: Check if solution exists `${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
       id: managed-zip-exists
       run: |
-        "info=$( "$(Test-Path ${{ inputs.solution-folder }}}/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+        "info=$( "$(Test-Path ${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
     - name: "Notice - unmanaged solution"
       if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}

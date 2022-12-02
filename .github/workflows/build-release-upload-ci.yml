@@ -122,6 +122,23 @@ jobs:
         "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
       # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
+    - name: Update `README.md`
+      id: update-readme-md
+      run: |
+        
+      
+# ---
+# title: Time Picker
+# description: This control converts datetime field into time picker field.
+# version: v1.0.0
+# blobName: TimePicker_1_0_0_managed.zip
+# gitRepoUrl: https://github.com/BeverCRM/PCF-TimePicker
+# youtubeVideoUrl: https://www.youtube.com/watch?v=apItceOl36g
+# price: Free
+# imgExtension: png
+# tags: [ Bever-Controls, PCF, Field, TimePicker ]
+# ---
+
     - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
       id: update-solution-cdsproj
       run: |
@@ -249,6 +266,10 @@ jobs:
     - name: Rename solution files to `${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}.zip` & `${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip`
       id: rename-solution-files
       run: get-childitem -path ${{ inputs.solution-folder }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}' }
+
+    - name: Copy `README.md` to `${{ inputs.solution-folder }}/bin/Release/`
+      id: copy-readme-md
+      run: Copy-Item -Path "README.md" -Destination "${{ inputs.solution-folder }}/bin/Release"
 
     - name: Upload solution artifacts
       id: upload-solution-artifacts

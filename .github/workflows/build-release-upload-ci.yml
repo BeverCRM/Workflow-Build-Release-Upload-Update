@@ -136,7 +136,25 @@ jobs:
     #       "control-description=${{ steps.get-solution-data.outputs.unique-nam }}" >> $env:GITHUB_OUTPUT
     #     }
 
-    - name: Update `Solution.xml`
+    - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
+      id: update-solution-cdsproj
+      run: |
+        $FileName = "${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj"
+        [xml]$XmlDocument = Get-Content -Path $FileName
+
+        $namespace = New-Object System.Xml.XmlNamespaceManager($XmlDocument.NameTable)
+        $namespace.AddNamespace("github-action", $XmlDocument.DocumentElement.NamespaceURI)
+        $SolutionPackageType = $XmlDocument.DocumentElement.SelectSingleNode("//github-action:SolutionPackageType", $namespace)
+
+        if ($SolutionPackageType -eq $null) {
+          $PropertyGroup = $XmlDocument.DocumentElement.AppendChild($XmlDocument.CreateElement("PropertyGroup", $XmlDocument.DocumentElement.NamespaceURI))
+          $SolutionPackageType = $PropertyGroup.AppendChild($XmlDocument.CreateElement("SolutionPackageType", $XmlDocument.DocumentElement.NamespaceURI))
+        }
+        
+        $SolutionPackageType.InnerText = "Both"
+        $XmlDocument.Save($FileName)
+
+    - name: Update `${{ inputs.solution-folder }}/src/Other/Solution.xml`
       id: update-solution-xml
       env:
         publisher-name: 'Bever'

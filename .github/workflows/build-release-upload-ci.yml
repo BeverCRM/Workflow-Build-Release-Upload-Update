@@ -159,16 +159,27 @@ jobs:
     - name: Update `${{ inputs.solution-folder }}/src/Other/Solution.xml`
       id: update-solution-xml
       env:
-        publisher-name: 'Bever'
-        publisher-prefix: 'bvr'
-        publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'
-        publisher-email: 'info@bevercrm.com'
-        publisher-phone: '+374 (77) 590071'
-        publisher-website: 'https://bevercrm.com'
-        publisher-city: 'Yerevan'
-        publisher-country: 'Armenia'
-        publisher-street: 'Abelian 6/4'
-        publisher-postal-code: '0038'
+        publisher: |
+        - name: 'Bever'
+        - prefix: 'bvr'
+        - description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'
+        - email: 'info@bevercrm.com'
+        - phone: '+374 (77) 590071'
+        - website: 'https://bevercrm.com'
+        - city: 'Yerevan'
+        - country: 'Armenia'
+        - street: 'Abelian 6/4'
+        - postal-code: '0038'
+      # publisher-name: 'Bever'
+      # publisher-prefix: 'bvr'
+      # publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'
+      # publisher-email: 'info@bevercrm.com'
+      # publisher-phone: '+374 (77) 590071'
+      # publisher-website: 'https://bevercrm.com'
+      # publisher-city: 'Yerevan'
+      # publisher-country: 'Armenia'
+      # publisher-street: 'Abelian 6/4'
+      # publisher-postal-code: '0038'
       run: |
         $FileName = "${{ inputs.solution-folder }}/src/Other/Solution.xml"
         [xml]$XmlDocument = Get-Content -Path $FileName
@@ -182,9 +193,9 @@ jobs:
         $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ inputs.control-description }}")
         $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
 
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.LocalizedNames.LocalizedName.description = "${{ env.publisher-name }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.CustomizationPrefix = "${{ env.publisher-prefix }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher․name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.LocalizedNames.LocalizedName.description = "${{ env.publisher․name }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.CustomizationPrefix = "${{ env.publisher․prefix }}"
 
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
@@ -194,16 +205,16 @@ jobs:
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
 
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress = "${{ env.publisher-email }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl = "${{ env.publisher-website }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1 = "${{ env.publisher-phone }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City = "${{ env.publisher-city }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country = "${{ env.publisher-country }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1 = "${{ env.publisher-street }}"
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode = "${{ env.publisher-postal-code }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress = "${{ env.publisher․email }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl = "${{ env.publisher․website }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1 = "${{ env.publisher․phone }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City = "${{ env.publisher․city }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country = "${{ env.publisher․country }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1 = "${{ env.publisher․street }}"
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode = "${{ env.publisher․postal-code }}"
 
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
-        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ env.publisher-description }}")
+        $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ env.publisher․description }}")
         $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
 
         $XmlDocument.Save($FileName)

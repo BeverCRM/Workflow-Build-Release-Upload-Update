@@ -138,25 +138,27 @@ jobs:
           "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
         # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
-        # - name: Update `README.md`
-        #   id: update-readme-md
-        #   run: |
-        #     $README = Get-Content -Path "README.md"
-        #     $NewContent = "---
-        #     title: ${{ inputs.control-title }}
-        #     description: ${{ inputs.control-description }}
-        #     version: v${{ steps.get-solution-data.outputs.version }}
-        #     blobName: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
-        #     gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
-        #     youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
-        #     price: ${{ control-price }}
-        #     imgExtension: ${{ control-img-extension }}
-        #     tags: ${{ control-tags }}
-        #     ---
-        #     "
+        - name: Update `README.md`
+          id: update-readme-md
+          run: |
+            $README = Get-Content -Path "README.md"
+            $ControlTags = ${{ control-tags }} -split ", |,"
 
-        #     Set-Content -Path "README.md" -Value $NewContent
-        #     Add-Content -Path "README.md" -Value $README
+            $NewContent = "---
+            title: ${{ inputs.control-title }}
+            description: ${{ inputs.control-description }}
+            version: v${{ steps.get-solution-data.outputs.version }}
+            blobName: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
+            gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
+            youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
+            price: ${{ control-price }}
+            imgExtension: ${{ control-img-extension }}
+            tags: $ControlTags
+            ---
+            "
+
+            Set-Content -Path "README.md" -Value $NewContent
+            Add-Content -Path "README.md" -Value $README
 
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj
@@ -296,7 +298,7 @@ jobs:
         id: upload-solution-artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-.parsed-version }}_artifacts
+          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: ${{ inputs.solution-folder }}/bin/Release/
 
   create-release:

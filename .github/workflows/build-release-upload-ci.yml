@@ -284,9 +284,9 @@ jobs:
         if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
         run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
 
-      - name: Rename solution files to `${{ needs.solution-configuration.outputs.unique-name }}_${{ needs.solution-configuration.outputs.parsed-version }}.zip` & `${{ needs.solution-configuration.outputs.parsed-version }}_managed.zip`
+      - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` & `${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
         id: rename-solution-files
-        run: get-childitem -path ${{ inputs.solution-folder }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.unique-name }}_${{ needs.solution-configuration.outputs.parsed-version }}' }
+        run: get-childitem -path ${{ inputs.solution-folder }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
 
       - name: Copy `README.md` to `${{ inputs.solution-folder }}/bin/Release/`
         id: copy-readme-md
@@ -296,7 +296,7 @@ jobs:
         id: upload-solution-artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ needs.solution-configuration.outputs.unique-name }}_${{ needs.solution-configuration.outputs.parsed-version }}_artifacts
+          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-.parsed-version }}_artifacts
           path: ${{ inputs.solution-folder }}/bin/Release/
 
   create-release:

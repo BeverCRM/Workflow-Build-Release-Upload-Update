@@ -3,6 +3,27 @@ name: Reusable Workflow - Build & Release & Upload CI
 on:
   workflow_call:
     inputs:
+      control-title:
+        description: Control title
+        type: string
+      control-description:
+        description: Control description
+        type: string
+      control-youtube-video-url:
+        description: Cotnrol youtube video url
+        type: string
+      control-price:
+        description: Cotnrol price
+        default: Free
+        type: string
+      control-img-extension:
+        description: Cotnrol images extension
+        default: png
+        type: string
+      control-tags:
+        description: Control tags (comma separated | added by default `Bever-Controls, PCF`)
+        type: string
+
       node-version:
         description: Node version
         default: 16

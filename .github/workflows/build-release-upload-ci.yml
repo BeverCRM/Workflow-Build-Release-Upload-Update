@@ -159,17 +159,18 @@ jobs:
     - name: Update `${{ inputs.solution-folder }}/src/Other/Solution.xml`
       id: update-solution-xml
       env:
-        publisher: |
-        - name: 'Bever'
-        - prefix: 'bvr'
-        - description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'
-        - email: 'info@bevercrm.com'
-        - phone: '+374 (77) 590071'
-        - website: 'https://bevercrm.com'
-        - city: 'Yerevan'
-        - country: 'Armenia'
-        - street: 'Abelian 6/4'
-        - postal-code: '0038'
+        publisher: {
+          name: 'Bever',
+          prefix: 'bvr',
+          description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.',
+          email: 'info@bevercrm.com',
+          phone: '+374 (77) 590071',
+          website: 'https://bevercrm.com',
+          city: 'Yerevan',
+          country: 'Armenia',
+          street: 'Abelian 6/4',
+          postal-code: '0038'
+        }
       # publisher-name: 'Bever'
       # publisher-prefix: 'bvr'
       # publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'

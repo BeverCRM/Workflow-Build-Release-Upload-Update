@@ -209,7 +209,7 @@ jobs:
   #         $XmlDocument.Save($FileName)
 
   build:
-    needs: solution-configuration
+    # needs: solution-configuration
     runs-on: windows-latest
 
     outputs:

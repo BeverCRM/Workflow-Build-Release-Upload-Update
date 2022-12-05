@@ -142,6 +142,7 @@ jobs:
           id: update-readme-md
           run: |
             $README = Get-Content -Path "README.md"
+            
             $NewContent = "---
             title: ${{ inputs.control-title }}
             description: ${{ inputs.control-description }}

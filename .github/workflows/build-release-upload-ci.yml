@@ -10,14 +10,14 @@ on:
         description: Control description
         type: string
       control-youtube-video-url:
-        description: YouTube video url
+        description: Cotnrol youtube video url
         type: string
       control-price:
-        description: Price
+        description: Cotnrol price
         default: Free
         type: string
       control-img-extension:
-        description: Price
+        description: Cotnrol images extension
         default: png
         type: string
       control-tags:
@@ -142,7 +142,6 @@ jobs:
           id: update-readme-md
           run: |
             $README = Get-Content -Path "README.md"
-            
             $NewContent = "---
             title: ${{ inputs.control-title }}
             description: ${{ inputs.control-description }}

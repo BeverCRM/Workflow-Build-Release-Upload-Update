@@ -122,11 +122,10 @@ jobs:
         "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
       # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
-    - name: Update `README.md`
-      id: update-readme-md
-      run: |
+    # - name: Update `README.md`
+    #   id: update-readme-md
+    #   run: |
         
-      
 # ---
 # title: Time Picker
 # description: This control converts datetime field into time picker field.

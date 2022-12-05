@@ -3,11 +3,27 @@ name: Reusable Workflow - Build & Release & Upload CI
 on:
   workflow_call:
     inputs:
+      control-title:
+        description: Control title
+        type: string
       control-description:
         description: Control description
         type: string
-        # description: Control description (default is control name)
-        # default: --control-name
+      control-youtube-video-url:
+        description: YouTube video url
+        type: string
+      control-price:
+        description: Price
+        default: Free
+        type: string
+      control-img-extension:
+        description: Price
+        default: png
+        type: string
+      control-tags:
+        description: Control tags (comma separated | added by default `Bever-Controls, PCF`)
+        type: string
+
       node-version:
         description: Node version
         default: 16
@@ -122,21 +138,25 @@ jobs:
           "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
         # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
-        # - name: Update `README.md`
-        #   id: update-readme-md
-        #   run: |
-            
-        # ---
-        # title: Time Picker
-        # description: This control converts datetime field into time picker field.
-        # version: v1.0.0
-        # blobName: TimePicker_1_0_0_managed.zip
-        # gitRepoUrl: https://github.com/BeverCRM/PCF-TimePicker
-        # youtubeVideoUrl: https://www.youtube.com/watch?v=apItceOl36g
-        # price: Free
-        # imgExtension: png
-        # tags: [ Bever-Controls, PCF, Field, TimePicker ]
-        # ---
+        - name: Update `README.md`
+          id: update-readme-md
+          run: |
+            $README = Get-Content -Path "README.md"
+            $NewContent = "---
+            title: ${{ inputs.control-title }}
+            description: ${{ inputs.control-description }}
+            version: v${{ steps.get-solution-data.outputs.version }}
+            blobName: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
+            gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
+            youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
+            price: ${{ control-price }}
+            imgExtension: ${{ control-img-extension }}
+            tags: ${{ control-tags }}
+            ---
+            "
+
+            Set-Content -Path "README.md" -Value $NewContent
+            Add-Content -Path "README.md" -Value $README
 
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj

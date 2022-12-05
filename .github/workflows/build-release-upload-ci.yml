@@ -159,7 +159,7 @@ jobs:
       - name: Update `${{ inputs.solution-folder }}/src/Other/Solution.xml`
         id: update-solution-xml
         env:
-          publisher:
+          publisher: |
             - name: 'Bever'
             - prefix: 'bvr'
             - description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'

@@ -5,9 +5,11 @@ on:
     inputs:
       control-title:
         description: Control title
+        default: ${{ jobs.solution-configuration.outputs.solution-unique-name }}
         type: string
       control-description:
         description: Control description
+        default: ${{ inputs.control-title }}
         type: string
       control-youtube-video-url:
         description: Cotnrol youtube video url
@@ -48,25 +50,25 @@ on:
     outputs:
       solution-unique-name:
         description: Solution Unique Name
-        value: ${{ jobs.main.outputs.get-solution-data }}
+        value: ${{ jobs.solution-configuration.outputs.solution-unique-name }}
       solution-version:
         description: Solution Version
-        value: ${{ jobs.main.outputs.get-solution-data }}
+        value: ${{ jobs.solution-configuration.outputs.solution-version }}
       solution-parsed-version:
         description: Solution Parsed Version
-        value: ${{ jobs.main.outputs.get-solution-data }}
+        value: ${{ jobs.solution-configuration.outputs.solution-parsed-version }}
       release-id:
         description: Release Id
-        value: ${{ jobs.main.outputs.random-number-generator }}
+        value: ${{ jobs.create-release.outputs.release-id }}
       release-name:
         description: Release Name
-        value: ${{ jobs.main.outputs.random-number-generator }}
+        value: ${{ jobs.create-release.outputs.release-name }}
       release-tag-name:
         description: Release Tag Name
-        value: ${{ jobs.main.outputs.random-number-generator }}
+        value: ${{ jobs.create-release.outputs.release-tag-name }}
       release-url:
         description: Release Url
-        value: ${{ jobs.main.outputs.random-number-generator }}
+        value: ${{ jobs.create-release.outputs.release-url }}
       unmanaged-zip-exists:
         description: Unmanaged Solution Exists
         value: ${{ jobs.main.outputs.unmanaged-zip-exists }}
@@ -142,7 +144,6 @@ jobs:
         id: update-readme-md
         run: |
           $README = Get-Content -Path "README.md"
-          $ControlTags = ${{ control-tags }} -split ", |,"
 
           $NewContent = "---
           title: ${{ inputs.control-title }}
@@ -153,7 +154,7 @@ jobs:
           youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
           price: ${{ control-price }}
           imgExtension: ${{ control-img-extension }}
-          tags: $ControlTags
+          tags: [${{ inputs.control-tags }}]
           ---
           "
 

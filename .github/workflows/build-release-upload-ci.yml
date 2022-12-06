@@ -9,7 +9,7 @@ on:
         type: string
       control-description:
         description: Control description
-        default: ${{ inputs.control-title }}
+        default: ${{ jobs.solution-configuration.outputs.solution-unique-name }}
         type: string
       control-youtube-video-url:
         description: Cotnrol youtube video url

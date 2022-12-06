@@ -142,7 +142,6 @@ jobs:
         id: update-readme-md
         run: |
           $README = Get-Content -Path "README.md"
-          $
           $ControlTags = ${{ control-tags }} -split ", |,"
 
           $NewContent = "---

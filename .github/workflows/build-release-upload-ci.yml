@@ -164,8 +164,8 @@ jobs:
           blobName: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
           gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
           youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
-          price: ${{ control-price }}
-          imgExtension: ${{ control-img-extension }}
+          price: ${{ inputs.control-price }}
+          imgExtension: ${{ inputs.control-img-extension }}
           tags: [${{ inputs.control-tags }}]
           ---
           "

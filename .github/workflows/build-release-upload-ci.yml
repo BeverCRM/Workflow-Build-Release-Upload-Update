@@ -81,21 +81,21 @@ jobs:
     outputs:
       ok: ${{ steps.input-parameters-validation.outputs.ok }}
       message: ${{ steps.input-parameters-validation.outputs.message }}
-      test: ${{  }}
+      test: ${{ steps.test.outputs.json }}
 
     steps:
       - name: TEST
         id: test
         run: |
-          $JsonStr = "{
+          $JsonStr = '{
             "prop1": "my name",
             "prop2": "my age",
             "prop3": 123,
             "prop4": true,
             "prop5": [ 8, 9, 7 ],
             "prop6": { "p5p1": "P5 P1", "p5p2": 52 }
-          }"
-          echo "test=$JsonStr" >> $GITHUB_OUTPUT
+          }'
+          echo "json=$JsonStr" >> $GITHUB_OUTPUT
 
       - name: Validation of input parameters
         id: input-parameters-validation

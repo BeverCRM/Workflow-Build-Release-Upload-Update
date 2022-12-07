@@ -4,12 +4,10 @@ on:
   workflow_call:
     inputs:
       control-title:
-        description: Control title
-        default: ${{ jobs.solution-configuration.outputs.solution-unique-name }}
+        description: Control title (default is Control Name)
         type: string
       control-description:
         description: Control description
-        default: ${{ jobs.solution-configuration.outputs.solution-unique-name }}
         type: string
       control-youtube-video-url:
         description: Cotnrol youtube video url
@@ -83,8 +81,22 @@ jobs:
     outputs:
       ok: ${{ steps.input-parameters-validation.outputs.ok }}
       message: ${{ steps.input-parameters-validation.outputs.message }}
+      test: ${{  }}
 
     steps:
+      - name: TEST
+        id: test
+        run: |
+          $JsonStr = "{
+            "prop1": "my name",
+            "prop2": "my age",
+            "prop3": 123,
+            "prop4": true,
+            "prop5": [ 8, 9, 7 ],
+            "prop6": { "p5p1": "P5 P1", "p5p2": 52 }
+          }"
+          echo "test=$JsonStr" >> $GITHUB_OUTPUT
+
       - name: Validation of input parameters
         id: input-parameters-validation
         run: |

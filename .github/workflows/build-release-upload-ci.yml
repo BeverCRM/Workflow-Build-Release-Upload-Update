@@ -24,11 +24,6 @@ on:
       control-tags:
         description: Control tags (comma separated | added by default `Bever-Controls, PCF`)
         type: string
-
-      node-version:
-        description: Node version
-        default: 16
-        type: number
       solution-folder:
         description: Final solution directory
         default: Solution
@@ -37,10 +32,6 @@ on:
         description: File name prefix of the .pcfproj
         default: PCF-
         type: string
-      delete-old-version:
-        description: Delete the old version of the solution from Azure blob storage
-        default: true
-        type: boolean
       release-solution-package-type:
         description: Solution package type to upload to release assets (none / unmanaged / managed / both)
         default: managed
@@ -49,6 +40,14 @@ on:
         description: Solution package type to upload to Azure blob storage (unmanaged / managed / both)
         default: managed
         type: string
+      delete-old-version:
+        description: Delete the old version of the solution from Azure blob storage
+        default: true
+        type: boolean
+      node-version:
+        description: Node version
+        default: 16
+        type: number
 
     outputs:
       solution-unique-name:

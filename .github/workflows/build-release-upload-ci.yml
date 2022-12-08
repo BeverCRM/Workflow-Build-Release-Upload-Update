@@ -89,14 +89,6 @@ jobs:
     outputs:
       ok: ${{ steps.input-parameters-validation.outputs.ok }}
       message: ${{ steps.input-parameters-validation.outputs.message }}
-      test: '{
-            "prop1": "my name",
-            "prop2": "my age",
-            "prop3": 123,
-            "prop4": true,
-            "prop5": [ 8, 9, 7 ],
-            "prop6": { "p5p1": "P5 P1", "p5p2": 52 }
-          }'
 
     steps:
       - name: Validation of input parameters
@@ -261,9 +253,9 @@ jobs:
     needs: solution-configuration
     runs-on: windows-latest
 
-    outputs:
-      unmanaged-zip-exists: ${{ steps.unmanaged-zip-exists.outputs.info }}
-      managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
+    # outputs:
+    #   unmanaged-zip-exists: ${{ steps.unmanaged-zip-exists.outputs.info }}
+    #   managed-zip-exists: ${{ steps.managed-zip-exists.outputs.info }}
 
     steps:
       - uses: actions/checkout@v3
@@ -302,23 +294,23 @@ jobs:
         working-directory: github-action/configuration/
         run: msbuild /t:rebuild /restore /p:configuration=release
 
-      - name: Check if solution exists `github-action/configuration/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
-        id: unmanaged-zip-exists
-        run: |
-          "info=$( "$(Test-Path github-action/configuration/bin/Release/${{ inputs.solution-folder }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+      # - name: Check if solution exists `github-action/configuration/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
+      #   id: unmanaged-zip-exists
+      #   run: |
+      #     "info=$( "$(Test-Path github-action/configuration/bin/Release/${{ inputs.solution-folder }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-      - name: Check if solution exists `github-action/configuration/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
-        id: managed-zip-exists
-        run: |
-          "info=$( "$(Test-Path github-action/configuration/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+      # - name: Check if solution exists `github-action/configuration/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
+      #   id: managed-zip-exists
+      #   run: |
+      #     "info=$( "$(Test-Path github-action/configuration/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-      - name: "Notice - unmanaged solution"
-        if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
-        run: Write-Output "::notice title=Unmanaged solution::Unmanaged solution doesn't exist."
+      # - name: "Notice - unmanaged solution"
+      #   if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
+      #   run: Write-Output "::notice title=Unmanaged solution::Unmanaged solution doesn't exist."
 
-      - name: "Notice - managed solution"
-        if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
-        run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
+      # - name: "Notice - managed solution"
+      #   if: ${{ steps.managed-zip-exists.outputs.info == 'false' }}
+      #   run: Write-Output "::notice title=Managed solution::Managed solution doesn't exist."
 
       - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` &  `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
         id: rename-solution-files
@@ -333,7 +325,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-          path: github-action/solution/bin/Release/
+          path: github-action/configuration/bin/Release/
 
   create-release:
     needs:
@@ -369,9 +361,10 @@ jobs:
 
       - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` (unmanaged)
         id: release-unmanaged-solution
-        if: ${{ steps.create-release.conclusion == 'success' &&
-            needs.build.outputs.unmanaged-zip-exists == 'true' &&
-            (inputs.release-solution-package-type == 'unmanaged' || inputs.release-solution-package-type == 'both') }}
+        if: ${{ steps.create-release.conclusion == 'success' && (inputs.release-solution-package-type == 'unmanaged' || inputs.release-solution-package-type == 'both') }}
+        # if: ${{ steps.create-release.conclusion == 'success' &&
+            # needs.build.outputs.unmanaged-zip-exists == 'true' &&
+            # (inputs.release-solution-package-type == 'unmanaged' || inputs.release-solution-package-type == 'both') }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -383,9 +376,10 @@ jobs:
 
       - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip` (managed)
         id: release-managed-solution
-        if: ${{ steps.create-release.conclusion == 'success' &&
-            needs.build.outputs.managed-zip-exists == 'true' &&
-            (inputs.release-solution-package-type == 'managed' || inputs.release-solution-package-type == 'both') }}
+        if: ${{ steps.create-release.conclusion == 'success' && (inputs.release-solution-package-type == 'managed' || inputs.release-solution-package-type == 'both') }}
+        # if: ${{ steps.create-release.conclusion == 'success' &&
+        #     needs.build.outputs.managed-zip-exists == 'true' &&
+        #     (inputs.release-solution-package-type == 'managed' || inputs.release-solution-package-type == 'both') }}
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -398,7 +392,6 @@ jobs:
   upload-to-azure-storage:
     needs:
       - solution-configuration
-      - build
       - create-release
     runs-on: ubuntu-latest
 
@@ -473,17 +466,18 @@ jobs:
             --content-type application/zip \
             --overwrite true
 
-      - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
-        if: ${{ inputs.azure-solution-package-type == 'both' && needs.build.outputs.unmanaged-zip-exists == 'false' }}
-        run: Write-Output "::warning title=Upload unmanaged & managed solutions::Unmanaged solution doesn't exist."
+      # - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
+      #   if: ${{ inputs.azure-solution-package-type == 'both' && needs.build.outputs.unmanaged-zip-exists == 'false' }}
+      #   run: Write-Output "::warning title=Upload unmanaged & managed solutions::Unmanaged solution doesn't exist."
 
-      - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
-        if: ${{ inputs.azure-solution-package-type == 'both' && needs.build.outputs.managed-zip-exists == 'false' }}
-        run: Write-Output "::warning title=Upload unmanaged & managed solutions::Managed solution doesn't exist."
+      # - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
+      #   if: ${{ inputs.azure-solution-package-type == 'both' && needs.build.outputs.managed-zip-exists == 'false' }}
+      #   run: Write-Output "::warning title=Upload unmanaged & managed solutions::Managed solution doesn't exist."
 
       - name: Upload solution new version file (unmanaged) to Azure storage (if exists)
         id: upload-solution-old-version-unmanaged-file-to-azure-storage
-        if: ${{ needs.build.outputs.unmanaged-zip-exists == 'true' && inputs.azure-solution-package-type == 'unmanaged' }}
+        if: ${{ inputs.azure-solution-package-type == 'unmanaged' }}
+        # if: ${{ needs.build.outputs.unmanaged-zip-exists == 'true' && inputs.azure-solution-package-type == 'unmanaged' }}
         uses: Azure/cli@v1
         with:
           inlineScript: |
@@ -497,7 +491,8 @@ jobs:
 
       - name: Upload solution new version file (managed) to Azure storage (if exists)
         id: upload-solution-old-version-managed-file-to-azure-storage
-        if: ${{ needs.build.outputs.managed-zip-exists == 'true' && inputs.azure-solution-package-type == 'managed' }}
+        if: ${{ inputs.azure-solution-package-type == 'managed' }}
+        # if: ${{ needs.build.outputs.managed-zip-exists == 'true' && inputs.azure-solution-package-type == 'managed' }}
         uses: Azure/cli@v1
         with:
           inlineScript: |

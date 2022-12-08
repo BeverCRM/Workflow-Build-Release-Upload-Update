@@ -387,10 +387,15 @@ jobs:
           inlineScript: |
             az storage fs directory delete \
             --yes \
-            --name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+
+      - name: "Warning - delete directory from Azure storage"
+        if: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outcome == 'failure' }}
+        run: |
+          echo "::warning title=Delete directory from Azure storage::Failed. Most probably, the '${{ needs.solution-configuration.outputs.solution-unique-name }}' directory does not exist."
 
       - name: Upload solution new version files (unmanaged & managed) to Azure storage
         id: upload-solution-new-version-files-to-azure-storage

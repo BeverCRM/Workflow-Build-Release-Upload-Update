@@ -295,19 +295,19 @@ jobs:
 
       - name: MSBuild
         id: msbuild
-        working-directory: ${{ inputs.solution-folder }}
+        working-directory: github-action/solution/
         run: msbuild /t:Rebuild /Restore /p:Configuration=Release
         # run: msbuild /t:Rebuild /Restore /p:Configuration=Release /p:ReferencePath=../../
 
-      - name: Check if solution exists `${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
+      - name: Check if solution exists `github-action/solution/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
         id: unmanaged-zip-exists
         run: |
-          "info=$( "$(Test-Path ${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+          "info=$( "$(Test-Path github-action/solution/bin/Release/${{ inputs.solution-folder }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-      - name: Check if solution exists `${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
+      - name: Check if solution exists `github-action/solution/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
         id: managed-zip-exists
         run: |
-          "info=$( "$(Test-Path ${{ inputs.solution-folder }}/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+          "info=$( "$(Test-Path github-action/solution/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
       - name: "Notice - unmanaged solution"
         if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
@@ -319,18 +319,18 @@ jobs:
 
       - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` &  `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
         id: rename-solution-files
-        run: get-childitem -path ${{ inputs.solution-folder }}/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
+        run: get-childitem -path inputs.solution-folder/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
 
-      - name: Move `${{ inputs.solution-folder }}/README.md` to `${{ inputs.solution-folder }}/bin/Release/`
+      - name: Move `inputs.solution-folder/README.md` to `inputs.solution-folder/bin/Release/`
         id: move-readme-md
-        run: Move-Item -Path "${{ inputs.solution-folder }}/README.md" -Destination "${{ inputs.solution-folder }}/bin/Release"
+        run: Move-Item -Path "inputs.solution-folder/README.md" -Destination "inputs.solution-folder/bin/Release"
 
       - name: Upload solution artifacts
         id: upload-solution-artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-          path: ${{ inputs.solution-folder }}/bin/Release/
+          path: inputs.solution-folder/bin/Release/
 
   # create-release:
   #   needs:

@@ -265,7 +265,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: solution_configuration_artifacts
-          path: github-action/configuration/
+          path: github-action/solution/
 
       - name: Setup Node.js ${{ inputs.node-verion }}
         uses: actions/setup-node@v3
@@ -291,7 +291,7 @@ jobs:
 
       - name: MSBuild
         id: msbuild
-        working-directory: github-action/configuration/
+        working-directory: github-action/solution/
         run: msbuild /t:rebuild /restore /p:configuration=release
 
       # - name: Check if solution exists `github-action/configuration/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
@@ -314,18 +314,18 @@ jobs:
 
       - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` &  `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
         id: rename-solution-files
-        run: get-childitem -path github-action/configuration/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
+        run: get-childitem -path github-action/solution/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
 
-      # - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
-      #   id: move-readme-md
-      #   run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
+      - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
+        id: move-readme-md
+        run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
 
       - name: Upload solution artifacts
         id: upload-solution-artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-          path: github-action/configuration/bin/Release/
+          path: github-action/solution/bin/Release/
 
   create-release:
     needs:
@@ -398,13 +398,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         
-      - name: Download solution configuration artifacts
-        id: download-solution-configuration-artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: solution_configuration_artifacts
-          path: github-action/configuration/
-
       - name: Download solution artifacts
         id: download-solution-artifacts
         uses: actions/download-artifact@v3
@@ -412,9 +405,9 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: github-action/solution/
 
-      - name: Move `github-action/configuration/README.md` to `github-action/solution/`
-        id: move-readme-md
-        run: Move-Item -Path "github-action/configuration/README.md" -Destination "github-action/solution/"
+      # - name: Move `github-action/configuration/README.md` to `github-action/solution/`
+      #   id: move-readme-md
+      #   run: Move-Item -Path "github-action/configuration/README.md" -Destination "github-action/solution/"
 
       - name: Delete solution old version files (unmanaged & managed) from Azure storage (if exists)
         id: delete-solution-old-version-both-files-from-azure-storage
@@ -460,7 +453,7 @@ jobs:
           inlineScript: |
             az storage blob upload-batch \
             --source github-action/solution/ \
-            --destination "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --destination "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --content-type application/zip \
@@ -483,7 +476,7 @@ jobs:
           inlineScript: |
             az storage blob upload \
             --file "github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip" \
-            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --content-type application/zip \
@@ -498,7 +491,7 @@ jobs:
           inlineScript: |
             az storage blob upload \
             --file "github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip" \
-            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --content-type application/zip \

@@ -60,6 +60,9 @@ on:
       solution-parsed-version:
         description: Solution Parsed Version
         value: ${{ jobs.solution-configuration.outputs.solution-parsed-version }}
+      solution-namespace:
+        description: Solution Namespace
+        value: ${{ jobs.solution-configuration.outputs.solution-namespace }}
       release-id:
         description: Release Id
         value: ${{ jobs.create-release.outputs.release-id }}
@@ -137,6 +140,7 @@ jobs:
       solution-unique-name: ${{ steps.get-solution-data.outputs.unique-name }}
       solution-version: ${{ steps.get-solution-data.outputs.version }}
       solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
+      solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
 
     steps:
       - uses: actions/checkout@v3

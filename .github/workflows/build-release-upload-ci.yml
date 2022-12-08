@@ -384,9 +384,9 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
-            az storage fs directory delete `
-            --yes `
-            --name "TestControl_test" `
+            az storage fs directory delete \
+            --yes \
+            --name "TestControl_test" \
             --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"

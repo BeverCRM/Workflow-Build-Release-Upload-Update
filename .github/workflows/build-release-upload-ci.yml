@@ -183,7 +183,7 @@ jobs:
 
           $ItemGroup = $XmlDocument.DocumentElement.AppendChild($XmlDocument.CreateElement("ItemGroup", $XmlDocument.DocumentElement.NamespaceURI))
           $ProjectReference = $ItemGroup.AppendChild($XmlDocument.CreateElement("ProjectReference", $XmlDocument.DocumentElement.NamespaceURI))
-          $ProjectReference.SetAttribute("Include", "../../${{ inputs.pcfproj-prefix }}${{ steps.get-solution-data.ouputs.unique-name }}.pcfproj")
+          $ProjectReference.SetAttribute("Include", "../../${{ inputs.pcfproj-prefix }}${{ steps.get-solution-data.outputs.unique-name }}.pcfproj")
 
           $SolutionPackageType = $XmlDocument.DocumentElement.SelectSingleNode("//github-action:SolutionPackageType", $namespace)
           if ($SolutionPackageType -eq $null) {

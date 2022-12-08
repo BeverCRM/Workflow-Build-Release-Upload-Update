@@ -4,8 +4,9 @@ on:
   workflow_call:
     inputs:
       control-title:
-        description: Control title (default is Control Name)
+        description: Control title
         type: string
+        required: true
       control-description:
         description: Control description
         type: string
@@ -31,6 +32,10 @@ on:
       solution-folder:
         description: Final solution directory
         default: Solution
+        type: string
+      pcfproj-prefix:
+        description: File name prefix of the .pcfproj
+        default: PCF-
         type: string
       delete-old-version:
         description: Delete the old version of the solution from Azure blob storage
@@ -144,7 +149,7 @@ jobs:
           "unique-name=$( $XmlDocument.manifest.control.constructor )" >> $env:GITHUB_OUTPUT
           "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
           "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
-        # "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
+          "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
       - name: Update `README.md` and copy to `${{ inputs.solution-folder }}/README.md`
         id: update-readme-md
@@ -175,14 +180,18 @@ jobs:
 
           $namespace = New-Object System.Xml.XmlNamespaceManager($XmlDocument.NameTable)
           $namespace.AddNamespace("github-action", $XmlDocument.DocumentElement.NamespaceURI)
-          $SolutionPackageType = $XmlDocument.DocumentElement.SelectSingleNode("//github-action:SolutionPackageType", $namespace)
 
+          $ItemGroup = $XmlDocument.DocumentElement.AppendChild($XmlDocument.CreateElement("ItemGroup", $XmlDocument.DocumentElement.NamespaceURI))
+          $ProjectReference = $ItemGroup.AppendChild($XmlDocument.CreateElement("ProjectReference", $XmlDocument.DocumentElement.NamespaceURI))
+          $ProjectReference.SetAttribute("Include", "../../${{ inputs.pcfproj-prefix }}${{ steps.get-solution-data.ouputs.unique-name }}.pcfproj")
+
+          $SolutionPackageType = $XmlDocument.DocumentElement.SelectSingleNode("//github-action:SolutionPackageType", $namespace)
           if ($SolutionPackageType -eq $null) {
             $PropertyGroup = $XmlDocument.DocumentElement.AppendChild($XmlDocument.CreateElement("PropertyGroup", $XmlDocument.DocumentElement.NamespaceURI))
             $SolutionPackageType = $PropertyGroup.AppendChild($XmlDocument.CreateElement("SolutionPackageType", $XmlDocument.DocumentElement.NamespaceURI))
           }
-          
           $SolutionPackageType.InnerText = "Both"
+
           $XmlDocument.Save($FileName)
 
       - name: Update `${{ inputs.solution-folder }}/src/Other/Solution.xml`

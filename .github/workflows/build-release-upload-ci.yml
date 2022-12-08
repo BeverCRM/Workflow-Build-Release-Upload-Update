@@ -296,8 +296,7 @@ jobs:
       - name: MSBuild
         id: msbuild
         working-directory: github-action/solution/
-        run: msbuild /t:Rebuild /Restore /p:Configuration=Release
-        # run: msbuild /t:Rebuild /Restore /p:Configuration=Release /p:ReferencePath=../../
+        run: msbuild /t:rebuild /restore /p:configuration=release
 
       - name: Check if solution exists `github-action/solution/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
         id: unmanaged-zip-exists
@@ -319,18 +318,18 @@ jobs:
 
       - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` &  `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
         id: rename-solution-files
-        run: get-childitem -path inputs.solution-folder/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
+        run: get-childitem -path github-action/solution/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
 
-      - name: Move `inputs.solution-folder/README.md` to `inputs.solution-folder/bin/Release/`
+      - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
         id: move-readme-md
-        run: Move-Item -Path "inputs.solution-folder/README.md" -Destination "inputs.solution-folder/bin/Release"
+        run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
 
       - name: Upload solution artifacts
         id: upload-solution-artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-          path: inputs.solution-folder/bin/Release/
+          path: github-action/solution/bin/Release/
 
   # create-release:
   #   needs:

@@ -156,12 +156,12 @@ jobs:
           title: ${{ inputs.control-title }}
           description: ${{ inputs.control-description }}
           version: v${{ steps.get-solution-data.outputs.version }}
-          blobName: ${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
+          blobName: ${{ steps.get-solution-data.outputs.unique-name }}/${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
           gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
           youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
           price: ${{ inputs.control-price }}
           imgExtension: ${{ inputs.control-img-extension }}
-          tags: [${{ inputs.control-tags }}]
+          tags: [ ${{ inputs.control-tags }}, Bever-Controls, PCF ]
           ---
           "
 

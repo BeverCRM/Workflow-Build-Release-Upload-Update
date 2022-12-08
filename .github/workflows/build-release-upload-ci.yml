@@ -388,7 +388,6 @@ jobs:
             az storage fs directory delete \
             --yes \
             --name "TestControl_test" \
-          # --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"

@@ -381,6 +381,7 @@ jobs:
       - name: Delete solution old version directory from Azure storage (if exists)
         id: delete-solution-old-version-directory-from-azure-storage
         if: ${{ inputs.delete-old-version == true }}
+        continue-on-error: true
         uses: Azure/cli@v1
         with:
           inlineScript: |
@@ -392,7 +393,7 @@ jobs:
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
       - name: Upload solution new version files (unmanaged & managed) to Azure storage
-        id: upload-solution-old-version-both-files-to-azure-storage
+        id: upload-solution-new-version-files-to-azure-storage
         if: ${{ inputs.azure-solution-package-type == 'both' }}
         uses: Azure/cli@v1
         with:
@@ -406,7 +407,7 @@ jobs:
             --overwrite true
 
       - name: Upload solution new version file (unmanaged) to Azure storage
-        id: upload-solution-old-version-unmanaged-file-to-azure-storage
+        id: upload-solution-new-version-unmanaged-file-to-azure-storage
         if: ${{ inputs.azure-solution-package-type == 'unmanaged' }}
         uses: Azure/cli@v1
         with:
@@ -420,7 +421,7 @@ jobs:
             --overwrite true
 
       - name: Upload solution new version file (managed) to Azure storage
-        id: upload-solution-old-version-managed-file-to-azure-storage
+        id: upload-solution-new-version-managed-file-to-azure-storage
         if: ${{ inputs.azure-solution-package-type == 'managed' }}
         uses: Azure/cli@v1
         with:
@@ -431,4 +432,17 @@ jobs:
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --content-type application/zip \
+            --overwrite true
+
+      - name: Upload `README.md` of the solution new version to Azure storage.
+        id: upload-solution-new-version-readme-file-to-azure-storage
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload \
+            --file "github-action/solution/README.md" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type text/markdown \
             --overwrite true

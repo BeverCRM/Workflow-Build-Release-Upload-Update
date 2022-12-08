@@ -273,7 +273,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: solution_configuration_artifacts
-          path: github-action/solution/
+          path: github-action/configuration/
 
       - name: Setup Node.js ${{ inputs.node-verion }}
         uses: actions/setup-node@v3
@@ -299,18 +299,18 @@ jobs:
 
       - name: MSBuild
         id: msbuild
-        working-directory: github-action/solution/
+        working-directory: github-action/configuration/
         run: msbuild /t:rebuild /restore /p:configuration=release
 
-      - name: Check if solution exists `github-action/solution/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
+      - name: Check if solution exists `github-action/configuration/bin/Release/${{ inputs.solution-folder }}.zip` (unmanaged)
         id: unmanaged-zip-exists
         run: |
-          "info=$( "$(Test-Path github-action/solution/bin/Release/${{ inputs.solution-folder }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+          "info=$( "$(Test-Path github-action/configuration/bin/Release/${{ inputs.solution-folder }}.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
-      - name: Check if solution exists `github-action/solution/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
+      - name: Check if solution exists `github-action/configuration/bin/Release/${{ inputs.solution-folder }}_managed.zip` (managed)
         id: managed-zip-exists
         run: |
-          "info=$( "$(Test-Path github-action/solution/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
+          "info=$( "$(Test-Path github-action/configuration/bin/Release/${{ inputs.solution-folder }}_managed.zip)".ToLower() )" >> $env:GITHUB_OUTPUT
 
       - name: "Notice - unmanaged solution"
         if: ${{ steps.unmanaged-zip-exists.outputs.info == 'false' }}
@@ -322,11 +322,11 @@ jobs:
 
       - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` &  `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
         id: rename-solution-files
-        run: get-childitem -path github-action/solution/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
+        run: get-childitem -path github-action/configuration/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
 
-      - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
-        id: move-readme-md
-        run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
+      # - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
+      #   id: move-readme-md
+      #   run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
 
       - name: Upload solution artifacts
         id: upload-solution-artifacts
@@ -335,164 +335,176 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: github-action/solution/bin/Release/
 
-  # create-release:
-  #   needs:
-  #     - build
-  #     - solution-configuration
-  #   runs-on: ubuntu-latest
+  create-release:
+    needs:
+      - solution-configuration
+      - build
+    runs-on: ubuntu-latest
     
-  #   outputs:
-  #     release-id: ${{ steps.create-release.outputs.id }}
-  #     release-name: v${{ needs.solution-configuration.outputs.solution-version }}
-  #     release-tag-name: v${{ needs.solution-configuration.outputs.solution-version }}
-  #     release-url: ${{ steps.create-release.outputs.html_url }}
+    outputs:
+      release-id: ${{ steps.create-release.outputs.id }}
+      release-name: v${{ needs.solution-configuration.outputs.solution-version }}
+      release-tag-name: v${{ needs.solution-configuration.outputs.solution-version }}
+      release-url: ${{ steps.create-release.outputs.html_url }}
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
 
-  #     - name: Create release v${{ needs.solution-configuration.outputs.solution-version }}
-  #       id: create-release
-  #       uses: actions/create-release@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         tag_name: v${{ needs.solution-configuration.outputs.solution-version }}
-  #         release_name: v${{ needs.solution-configuration.outputs.solution-version }}
-  #         body_path: CHANGELOG.md
+      - name: Download solution artifacts
+        id: download-solution-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
+          path: github-action/solution/
 
-  #     - name: Download solution artifacts
-  #       id: download-solution-artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-  #         path: github-action/artifacts/
+      - name: Create release v${{ needs.solution-configuration.outputs.solution-version }}
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.solution-configuration.outputs.solution-version }}
+          release_name: v${{ needs.solution-configuration.outputs.solution-version }}
+          body_path: CHANGELOG.md
 
-  #     - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` (unmanaged)
-  #       id: release-unmanaged-solution
-  #       if: ${{ steps.create-release.conclusion == 'success' &&
-  #           needs.build.outputs.unmanaged-zip-exists == 'true' &&
-  #           (inputs.release-solution-package-type == 'unmanaged' || inputs.release-solution-package-type == 'both') }}
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ steps.create-release.outputs.upload_url }}
-  #         asset_path: github-action/artifacts/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
-  #         asset_name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
-  #         asset_content_type: application/zip
+      - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` (unmanaged)
+        id: release-unmanaged-solution
+        if: ${{ steps.create-release.conclusion == 'success' &&
+            needs.build.outputs.unmanaged-zip-exists == 'true' &&
+            (inputs.release-solution-package-type == 'unmanaged' || inputs.release-solution-package-type == 'both') }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
+          asset_name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
+          asset_content_type: application/zip
 
-  #     - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip` (managed)
-  #       id: release-managed-solution
-  #       if: ${{ steps.create-release.conclusion == 'success' &&
-  #           needs.build.outputs.managed-zip-exists == 'true' &&
-  #           (inputs.release-solution-package-type == 'managed' || inputs.release-solution-package-type == 'both') }}
-  #       uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ steps.create-release.outputs.upload_url }}
-  #         asset_path: github-action/artifacts/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
-  #         asset_name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
-  #         asset_content_type: application/zip
+      - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip` (managed)
+        id: release-managed-solution
+        if: ${{ steps.create-release.conclusion == 'success' &&
+            needs.build.outputs.managed-zip-exists == 'true' &&
+            (inputs.release-solution-package-type == 'managed' || inputs.release-solution-package-type == 'both') }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
+          asset_name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
+          asset_content_type: application/zip
 
-  # upload-to-azure-storage:
-  #   needs:
-  #     - build
-  #     - solution-configuration
-  #   runs-on: ubuntu-latest
+  upload-to-azure-storage:
+    needs:
+      - solution-configuration
+      - build
+      - create-release
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v3
+    steps:
+      - uses: actions/checkout@v3
         
-  #     - name: Download solution artifacts
-  #       id: download-solution-artifacts
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-  #         path: github-action/artifacts/
+      - name: Download solution configuration artifacts
+        id: download-solution-configuration-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: solution_configuration_artifacts
+          path: github-action/configuration/
 
-  #     - name: Delete solution old version files (unmanaged & managed) from Azure storage (if exists)
-  #       id: delete-solution-old-version-both-files-from-azure-storage
-  #       if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'both' }}
-  #       uses: Azure/cli@v1
-  #       with:
-  #         inlineScript: |
-  #           az storage blob delete-batch \
-  #           --pattern "${{ needs.solution-configuration.outputs.solution-unique-name }}_*.zip" \
-  #           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-  #           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
-  #           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+      - name: Download solution artifacts
+        id: download-solution-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
+          path: github-action/solution/
 
-  #     - name: Delete solution old version file (unmanaged) from Azure storage (if exists)
-  #       id: delete-solution-old-version-unmanaged-file-from-azure-storage
-  #       if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'unmanaged' }}
-  #       uses: Azure/cli@v1
-  #       with:
-  #         inlineScript: |
-  #           az storage blob delete-batch \
-  #           --pattern "${{ needs.solution-configuration.outputs.solution-unique-name }}_*[!managed].zip" \
-  #           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-  #           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
-  #           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+      - name: Move `github-action/configuration/README.md` to `github-action/solution/`
+        id: move-readme-md
+        run: Move-Item -Path "github-action/configuration/README.md" -Destination "github-action/solution/"
 
-  #     - name: Delete solution old version file (managed) from Azure storage (if exists)
-  #       id: delete-solution-old-version-managed-file-from-azure-storage
-  #       if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'managed' }}
-  #       uses: Azure/cli@v1
-  #       with:
-  #         inlineScript: |
-  #           az storage blob delete-batch \
-  #           --pattern "${{ needs.solution-configuration.outputs.solution-unique-name }}_*_managed.zip" \
-  #           --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-  #           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
-  #           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+      - name: Delete solution old version files (unmanaged & managed) from Azure storage (if exists)
+        id: delete-solution-old-version-both-files-from-azure-storage
+        if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'both' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob delete-batch \
+            --pattern "${{ needs.solution-configuration.outputs.solution-unique-name }}_*.zip" \
+            --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
-  #     - name: Upload solution new version files (unmanaged & managed) to Azure storage (if exists)
-  #       id: upload-solution-old-version-both-files-to-azure-storage
-  #       if: ${{ inputs.azure-solution-package-type == 'both' }}
-  #       uses: Azure/cli@v1
-  #       with:
-  #         inlineScript: |
-  #           az storage blob upload-batch \
-  #           --source github-action/artifacts/ \
-  #           --destination "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-  #           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-  #           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-  #           --content-type application/zip \
-  #           --overwrite true
+      - name: Delete solution old version file (unmanaged) from Azure storage (if exists)
+        id: delete-solution-old-version-unmanaged-file-from-azure-storage
+        if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'unmanaged' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob delete-batch \
+            --pattern "${{ needs.solution-configuration.outputs.solution-unique-name }}_*[!managed].zip" \
+            --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
-  #     - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
-  #       if: ${{ inputs.azure-solution-package-type == 'both' && needs.build.outputs.unmanaged-zip-exists == 'false' }}
-  #       run: Write-Output "::warning title=Upload unmanaged & managed solutions::Unmanaged solution doesn't exist."
+      - name: Delete solution old version file (managed) from Azure storage (if exists)
+        id: delete-solution-old-version-managed-file-from-azure-storage
+        if: ${{ inputs.delete-old-version == true && inputs.azure-solution-package-type == 'managed' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob delete-batch \
+            --pattern "${{ needs.solution-configuration.outputs.solution-unique-name }}_*_managed.zip" \
+            --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
-  #     - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
-  #       if: ${{ inputs.azure-solution-package-type == 'both' && needs.build.outputs.managed-zip-exists == 'false' }}
-  #       run: Write-Output "::warning title=Upload unmanaged & managed solutions::Managed solution doesn't exist."
+      - name: Upload solution new version files (unmanaged & managed) to Azure storage (if exists)
+        id: upload-solution-old-version-both-files-to-azure-storage
+        if: ${{ inputs.azure-solution-package-type == 'both' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload-batch \
+            --source github-action/solution/ \
+            --destination "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true
 
-  #     - name: Upload solution new version file (unmanaged) to Azure storage (if exists)
-  #       id: upload-solution-old-version-unmanaged-file-to-azure-storage
-  #       if: ${{ needs.build.outputs.unmanaged-zip-exists == 'true' && inputs.azure-solution-package-type == 'unmanaged' }}
-  #       uses: Azure/cli@v1
-  #       with:
-  #         inlineScript: |
-  #           az storage blob upload \
-  #           --file "github-action/artifacts/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip" \
-  #           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-  #           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-  #           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-  #           --content-type application/zip \
-  #           --overwrite true
+      - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
+        if: ${{ inputs.azure-solution-package-type == 'both' && needs.build.outputs.unmanaged-zip-exists == 'false' }}
+        run: Write-Output "::warning title=Upload unmanaged & managed solutions::Unmanaged solution doesn't exist."
 
-  #     - name: Upload solution new version file (managed) to Azure storage (if exists)
-  #       id: upload-solution-old-version-managed-file-to-azure-storage
-  #       if: ${{ needs.build.outputs.managed-zip-exists == 'true' && inputs.azure-solution-package-type == 'managed' }}
-  #       uses: Azure/cli@v1
-  #       with:
-  #         inlineScript: |
-  #           az storage blob upload \
-  #           --file "github-action/artifacts/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip" \
-  #           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-  #           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-  #           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-  #           --content-type application/zip \
-  #           --overwrite true
+      - name: "Warning - upload solution new version files (unmanaged & managed) to Azure storage"
+        if: ${{ inputs.azure-solution-package-type == 'both' && needs.build.outputs.managed-zip-exists == 'false' }}
+        run: Write-Output "::warning title=Upload unmanaged & managed solutions::Managed solution doesn't exist."
+
+      - name: Upload solution new version file (unmanaged) to Azure storage (if exists)
+        id: upload-solution-old-version-unmanaged-file-to-azure-storage
+        if: ${{ needs.build.outputs.unmanaged-zip-exists == 'true' && inputs.azure-solution-package-type == 'unmanaged' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload \
+            --file "github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true
+
+      - name: Upload solution new version file (managed) to Azure storage (if exists)
+        id: upload-solution-old-version-managed-file-to-azure-storage
+        if: ${{ needs.build.outputs.managed-zip-exists == 'true' && inputs.azure-solution-package-type == 'managed' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload \
+            --file "github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true

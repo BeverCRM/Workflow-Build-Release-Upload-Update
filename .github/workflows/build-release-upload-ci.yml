@@ -390,6 +390,20 @@ jobs:
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
+      - name: Upload `README.md` of the solution new version to Azure storage.
+        id: upload-solution-new-version-readme-file-to-azure-storage
+        if: ${{ inputs.azure-solution-package-type != 'both' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload \
+            --file "github-action/solution/README.md" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type text/markdown \
+            --overwrite true
+
       - name: Upload solution new version files (unmanaged & managed) to Azure storage
         id: upload-solution-new-version-files-to-azure-storage
         if: ${{ inputs.azure-solution-package-type == 'both' }}
@@ -430,17 +444,4 @@ jobs:
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --content-type application/zip \
-            --overwrite true
-
-      - name: Upload `README.md` of the solution new version to Azure storage.
-        id: upload-solution-new-version-readme-file-to-azure-storage
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az storage blob upload \
-            --file "github-action/solution/README.md" \
-            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --content-type text/markdown \
             --overwrite true

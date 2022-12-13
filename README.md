@@ -22,28 +22,68 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <th>Description</th>
   </tr>
   <tr>
-    <td>node-version</td>
-    <td>Optional</td>
-    <td>number</td>
-    <td>16</td>
-    <td></td>
-    <td>Node version.</td>
+    <td>control-title</td>
+    <td>Required</td>
+    <td>string</td>
+    <td>---</td>
+    <td>---</td>
+    <td>Control title</td>
   </tr>
   <tr>
-    <td>msbuildtarget</td>
+    <td>control-description</td>
+    <td>Optional</td>
+    <td>string</td>
+    <td>---</td>
+    <td>---</td>
+    <td>Control description</td>
+  </tr>
+  <tr>
+    <td>control-youtube-video-url</td>
+    <td>Optional</td>
+    <td>string</td>
+    <td>---</td>
+    <td>---</td>
+    <td>Control youtube video url</td>
+  </tr>
+  <tr>
+    <td>control-price</td>
+    <td>Optional</td>
+    <td>string</td>
+    <td>Free</td>
+    <td>---</td>
+    <td>Control price</td>
+  </tr>
+  <tr>
+    <td>control-img-extension</td>
+    <td>Optional</td>
+    <td>string</td>
+    <td>png</td>
+    <td>---</td>
+    <td>Control images extension</td>
+  </tr>
+  <tr>
+    <td>control-tags</td>
+    <td>Optional</td>
+    <td>string</td>
+    <td>Bever-Controls, PCF</td>
+    <td>---</td>
+    <td>Control tags (comma separated | added by default `Bever-Controls, PCF`)</td>
+  </tr>
+  <tr>
+    <td>solution-folder</td>
     <td>Optional</td>
     <td>string</td>
     <td>Solution</td>
-    <td></td>
-    <td>The solution directory in the root path where the 'src/Other/Solution.xml' file is located.</td>
+    <td>---</td>
+    <td>Final solution directory</td>
   </tr>
   <tr>
-    <td>delete-old-version</td>
+    <td>pcfproj-prefix</td>
     <td>Optional</td>
-    <td>boolean</td>
-    <td>true</td>
-    <td></td>
-    <td>Delete old solution file(s) from Azure blob storage or not.</td>
+    <td>string</td>
+    <td>PCF-</td>
+    <td>---</td>
+    <td>File name prefix of the .pcfproj</td>
   </tr>
   <tr>
     <td>release-solution-package-type</td>
@@ -51,7 +91,7 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>string</td>
     <td>managed</td>
     <td>none, unmanaged, managed, both</td>
-    <td>The solution package type to add to the created release as assets.</td>
+    <td>The solution package type to add to the created release as assets</td>
   </tr>
   <tr>
     <td>azure-solution-package-type</td>
@@ -59,7 +99,23 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>string</td>
     <td>managed</td>
     <td>unmanaged, managed, both</td>
-    <td>The solution package type to upload to Azure blob storage.</td>
+    <td>The solution package type to upload to Azure blob storage</td>
+  </tr>
+  <tr>
+    <td>delete-old-version</td>
+    <td>Optional</td>
+    <td>boolean</td>
+    <td>true</td>
+    <td>---</td>
+    <td>Delete old solution file(s) from Azure blob storage or not</td>
+  </tr>
+  <tr>
+    <td>node-version</td>
+    <td>Optional</td>
+    <td>number</td>
+    <td>16</td>
+    <td>---</td>
+    <td>Node version</td>
   </tr>
 </table>
 
@@ -76,55 +132,61 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
   <tr>
     <td>solution-unique-name</td>
     <td>string</td>
-    <td>The solution unique name.</td>
+    <td>The solution unique name</td>
     <td>SampleCustomComponent</td>
   </tr>
   <tr>
     <td>solution-version</td>
     <td>string</td>
-    <td>The solution version.</td>
+    <td>The solution version</td>
     <td>1.0.0</td>
   </tr>
   <tr>
     <td>solution-parsed-version</td>
     <td>string</td>
-    <td>The solution parsed version.</td>
+    <td>The solution namespace</td>
+    <td>BeverControls</td>
+  </tr>
+  <tr>
+    <td>solution-namespace</td>
+    <td>string</td>
+    <td>The solution parsed version</td>
     <td>1_0_0</td>
   </tr>
   <tr>
     <td>release-id</td>
     <td>string</td>
-    <td>Created release ID.</td>
+    <td>Created release ID</td>
     <td></td>
   </tr>
   <tr>
     <td>release-name</td>
     <td>string</td>
-    <td>Created release name.</td>
+    <td>Created release name</td>
     <td>v1.0.0</td>
   </tr>
   <tr>
     <td>release-tag-name</td>
     <td>string</td>
-    <td>Created release tag name.</td>
+    <td>Created release tag name</td>
     <td>v1.0.0</td>
   </tr>
   <tr>
     <td>release-url</td>
     <td>string</td>
-    <td>Created release URL, the URL users can navigate to in order to view the release.</td>
+    <td>Created release URL, the URL users can navigate to in order to view the release</td>
     <td>https://github.com/BeverCRM/PCF-SampleCustomComponent/releases/tag/v1.0.0</td>
   </tr>
   <tr>
     <td>unmanaged-zip-exists</td>
     <td>boolean</td>
-    <td>Whether the unmanaged solution exists or not.</td>
+    <td>Whether the unmanaged solution exists or not</td>
     <td></td>
   </tr>
   <tr>
     <td>managed-zip-exists</td>
     <td>boolean</td>
-    <td>Whether the managed solution exists or not.</td>
+    <td>Whether the managed solution exists or not</td>
     <td></td>
   </tr>
 </table>

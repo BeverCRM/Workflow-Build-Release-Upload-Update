@@ -181,13 +181,13 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>unmanaged-zip-exists</td>
     <td>boolean</td>
     <td>Whether the unmanaged solution exists or not</td>
-    <td></td>
+    <td>---</td>
   </tr>
   <tr>
     <td>managed-zip-exists</td>
     <td>boolean</td>
     <td>Whether the managed solution exists or not</td>
-    <td></td>
+    <td>---</td>
   </tr>
 </table>
 
@@ -207,6 +207,19 @@ jobs:
   main:
     uses: BeverCRM/Workflow-Build-Release-Upload-CI/.github/workflows/build-release-upload-ci.yml@master
     secrets: inherit
+    with:
+      control-title: Sample Custom Component # required
+      # control-description: '' # default
+      # control-youtube-video-url: '' # default
+      # control-price: Free # default
+      # control-img-extension: png # default
+      # control-tags: Bever-Controls, PCF # added by default
+      # solution-folder: Solution # default
+      # pcfproj-prefix: PCF- # default
+      # release-solution-package-type: managed # default
+      # azure-solution-package-type: managed # default
+      # delete-old-version: true # default
+      # node-version: 16 # default
 ```
 
 <br>

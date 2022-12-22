@@ -51,34 +51,34 @@ on:
 
     outputs:
       solution-unique-name:
-        description: Solution Unique Name
+        description: The solution unique name
         value: ${{ jobs.solution-configuration.outputs.solution-unique-name }}
       solution-version:
-        description: Solution Version
+        description: The solution version
         value: ${{ jobs.solution-configuration.outputs.solution-version }}
       solution-parsed-version:
-        description: Solution Parsed Version
+        description: The solution parsed version
         value: ${{ jobs.solution-configuration.outputs.solution-parsed-version }}
       solution-namespace:
-        description: Solution Namespace
+        description: The solution namespace
         value: ${{ jobs.solution-configuration.outputs.solution-namespace }}
       release-id:
-        description: Release Id
+        description: Created release ID
         value: ${{ jobs.create-release.outputs.release-id }}
       release-name:
-        description: Release Name
+        description: Created release name
         value: ${{ jobs.create-release.outputs.release-name }}
       release-tag-name:
-        description: Release Tag Name
+        description: Created release tag name
         value: ${{ jobs.create-release.outputs.release-tag-name }}
       release-url:
-        description: Release Url
+        description: Created release URL, the URL users can navigate to in order to view the release
         value: ${{ jobs.create-release.outputs.release-url }}
       unmanaged-zip-exists:
-        description: Unmanaged Solution Exists
+        description: Whether the unmanaged solution exists or not
         value: ${{ jobs.main.outputs.unmanaged-zip-exists }}
       managed-zip-exists:
-        description: Managed Solution Exists
+        description: Whether the managed solution exists or not
         value: ${{ jobs.main.outputs.managed-zip-exists }}
 
 jobs:

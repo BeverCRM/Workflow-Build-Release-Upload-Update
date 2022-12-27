@@ -225,7 +225,7 @@ jobs:
 <br>
 <br>
 
-> ***Note*** **You need to have a CHANGELOG.md file in the root directory for the created release description.**
+> ***Note*** **You need to have a *CHANGELOG.md* file in the root directory for the created release description and a *README.md* file to upload to Azure Blob Storage for the PCF description.**
 
 ---
 

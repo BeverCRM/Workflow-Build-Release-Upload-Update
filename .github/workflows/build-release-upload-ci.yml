@@ -397,6 +397,11 @@ jobs:
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" || true
 
       - name: SHOW OUTPUTS
+        if: ${{ failure() }}
+        run: |
+          echo "failure: $?"
+
+      - name: SHOW OUTPUTS
         run: |
           echo "conclusion: ${{ steps.delete-solution-old-version-directory-from-azure-storage.conclusion }}"
           echo "outcome: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outcome }}"

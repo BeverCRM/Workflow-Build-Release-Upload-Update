@@ -40,7 +40,11 @@ on:
         description: Solution package type to upload to Azure blob storage (unmanaged / managed / both)
         default: managed
         type: string
-      delete-old-version:
+      create-new-release:
+        description: Create a new release in GitHub
+        default: true
+        type: boolean
+      delete-old-version-from-azure:
         description: Delete the old version of the solution from Azure blob storage
         default: true
         type: boolean
@@ -308,6 +312,7 @@ jobs:
     needs:
       - solution-configuration
       - build
+    if: ${{ inputs.create-new-release == true }}
     runs-on: ubuntu-latest
     
     outputs:
@@ -363,7 +368,7 @@ jobs:
   upload-to-azure-storage:
     needs:
       - solution-configuration
-      - create-release
+      # - create-release
     runs-on: ubuntu-latest
 
     steps:
@@ -378,7 +383,7 @@ jobs:
 
       - name: Delete solution old version directory from Azure storage (if exists)
         id: delete-solution-old-version-directory-from-azure-storage
-        if: ${{ inputs.delete-old-version == true }}
+        if: ${{ inputs.delete-old-version-from-azure == true }}
         continue-on-error: true
         uses: Azure/cli@v1
         with:

@@ -400,7 +400,8 @@ jobs:
         run: |
           echo "conclusion: ${{ steps.delete-solution-old-version-directory-from-azure-storage.conclusion }}"
           echo "outcome: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outcome }}"
-          echo "error: $GITHUB_ACTION_LAST_ERROR"
+          echo "error: ${{ steps.delete-solution-old-version-directory-from-azure-storage.error }}"
+          echo "error: ${{ steps.delete-solution-old-version-directory-from-azure-storage.ERROR }}"
 
       - name: Warning
         if: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outcome == 'failure' }}

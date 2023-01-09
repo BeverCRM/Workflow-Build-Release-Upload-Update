@@ -394,7 +394,7 @@ jobs:
             --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" || true
 
       - name: SHOW OUTPUTS
         run: |
@@ -407,7 +407,6 @@ jobs:
         if: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outcome == 'failure' }}
         run: |
           echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
-          echo "::warning title=Delete solution old version from Azure storage::$GITHUB_ACTION_LAST_ERROR"
 
       - name: Upload `README.md` of the solution new version to Azure storage.
         id: upload-solution-new-version-readme-file-to-azure-storage

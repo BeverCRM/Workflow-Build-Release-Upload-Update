@@ -368,6 +368,7 @@ jobs:
   upload-to-azure-storage:
     needs:
       - solution-configuration
+      - build
       # - create-release
     runs-on: ubuntu-latest
 

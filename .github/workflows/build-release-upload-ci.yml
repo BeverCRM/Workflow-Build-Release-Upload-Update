@@ -369,6 +369,7 @@ jobs:
     needs:
       - solution-configuration
       - create-release
+    if: ${{ needs.create-release.result != 'failure' }}
     runs-on: ubuntu-latest
 
     steps:

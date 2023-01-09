@@ -403,8 +403,8 @@ jobs:
 
       - name: SHOW OUTPUTS
         run: |
-          echo "conclusion: ${{ elete-solution-old-version-directory-from-azure-storage.conclusion }}"
-          echo "outcome: ${{ elete-solution-old-version-directory-from-azure-storage.outcome }}"
+          echo "conclusion: ${{ delete-solution-old-version-directory-from-azure-storage.conclusion }}"
+          echo "outcome: ${{ delete-solution-old-version-directory-from-azure-storage.outcome }}"
 
       - name: Upload `README.md` of the solution new version to Azure storage.
         id: upload-solution-new-version-readme-file-to-azure-storage

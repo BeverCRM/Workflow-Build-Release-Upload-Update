@@ -381,6 +381,9 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: github-action/solution/
 
+      - name: Disable the error trap
+        run: set +e
+
       - name: Delete solution old version directory from Azure storage (if exists)
         id: delete-solution-old-version-directory-from-azure-storage
         if: ${{ inputs.delete-old-version-from-azure == true }}
@@ -394,6 +397,14 @@ jobs:
             --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+
+      - name: Enable the error trap
+        run: set -e
+
+      - name: SHOW OUTPUTS
+        run: |
+          echo "conclusion: ${{ elete-solution-old-version-directory-from-azure-storage.conclusion }}"
+          echo "outcome: ${{ elete-solution-old-version-directory-from-azure-storage.outcome }}"
 
       - name: Upload `README.md` of the solution new version to Azure storage.
         id: upload-solution-new-version-readme-file-to-azure-storage

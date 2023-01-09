@@ -369,7 +369,7 @@ jobs:
     needs:
       - solution-configuration
       - create-release
-    if: ${{ needs.create-release.result != 'failure' }}
+    if: ${{ always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped') }}
     runs-on: ubuntu-latest
 
     steps:

@@ -369,7 +369,6 @@ jobs:
     needs:
       - solution-configuration
       - create-release
-      # - build
     runs-on: ubuntu-latest
 
     steps:

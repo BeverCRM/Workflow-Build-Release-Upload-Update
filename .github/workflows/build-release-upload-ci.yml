@@ -387,21 +387,14 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
-            result=az storage fs directory exists \
-            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            az storage blob exists \
+            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --output tsv
+            --output "tsv"
 
-            echo "result=$result" >> $GITHUB_OUTPUT
-
-          #   az storage blob exists `
-          # --name "TimePicker/README.md" `
-          # --container-name "customcomponents" `
-          # --account-name "bevermarketplace" `
-          # --connection-string "DefaultEndpointsProtocol=https;AccountName=bevermarketplace;AccountKey=PMR4YUDhZZl4rCVkwH42gfH4SesNO+4Bn9jjkhok21wp8MHbVkoOIpHr6Vhd51wqx1GVM5jFStb1fEvaXSO8Lg==;EndpointSuffix=core.windows.net" `
-          # --output "tsv"
+          # echo "result=$result" >> $GITHUB_OUTPUT
 
       - name: PRINT RESULT
         run: |

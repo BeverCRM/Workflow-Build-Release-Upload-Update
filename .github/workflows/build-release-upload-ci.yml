@@ -382,7 +382,7 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: github-action/solution/
 
-      # - name: Check if directory already exists
+      - name: Check if directory already exists
         id: check-if-directory-already-exists
         uses: Azure/cli@v1
         with:

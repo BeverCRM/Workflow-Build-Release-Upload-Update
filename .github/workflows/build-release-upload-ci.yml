@@ -387,12 +387,14 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
-            result=az storage fs directory exists \
-            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            result=az storage blob exists \
+            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --output tsv
+            --output "tsv"
+
+            echo "result=$result" >> $GITHUB_OUTPUT
 
       - name: PRINT RESULT
         run: |

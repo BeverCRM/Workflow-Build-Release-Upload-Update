@@ -102,12 +102,20 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>The solution package type to upload to Azure blob storage</td>
   </tr>
   <tr>
-    <td>delete-old-version</td>
+    <td>create-new-release</td>
     <td>Optional</td>
     <td>boolean</td>
     <td>true</td>
     <td>---</td>
-    <td>Delete old solution file(s) from Azure blob storage or not</td>
+    <td>Create a new release on GitHub or not</td>
+  </tr>
+  <tr>
+    <td>delete-old-version-from-azure</td>
+    <td>Optional</td>
+    <td>boolean</td>
+    <td>true</td>
+    <td>---</td>
+    <td>Delete the old solution directory from Azure blob storage or not</td>
   </tr>
   <tr>
     <td>node-version</td>
@@ -218,7 +226,8 @@ jobs:
       # pcfproj-prefix: PCF- # default
       # release-solution-package-type: managed # default
       # azure-solution-package-type: managed # default
-      # delete-old-version: true # default
+      # create-new-release: true # default
+      # delete-old-version-from-azure: true # default
       # node-version: 16 # default
 ```
 

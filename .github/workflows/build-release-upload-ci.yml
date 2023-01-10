@@ -387,12 +387,21 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
+            az config set extension.use_dynamic_install=yes_without_prompt
+            
             az storage blob directory exists \
             --directory-path "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --output tsv
+
+          #   az storage blob exists `
+          # --name "TimePicker/README.md" `
+          # --container-name "customcomponents" `
+          # --account-name "bevermarketplace" `
+          # --connection-string "DefaultEndpointsProtocol=https;AccountName=bevermarketplace;AccountKey=PMR4YUDhZZl4rCVkwH42gfH4SesNO+4Bn9jjkhok21wp8MHbVkoOIpHr6Vhd51wqx1GVM5jFStb1fEvaXSO8Lg==;EndpointSuffix=core.windows.net" `
+          # --output "tsv"
 
       - name: PRINT RESULT
         if: ${{ success() }}

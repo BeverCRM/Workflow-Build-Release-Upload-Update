@@ -389,12 +389,14 @@ jobs:
           inlineScript: |
             az config set extension.use_dynamic_install=yes_without_prompt
             
-            az storage blob directory exists \
+            result=az storage blob directory exists \
             --directory-path "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --output tsv
+
+            echo "result=$result" >> $GITHUB_OUTPUT
 
           #   az storage blob exists `
           # --name "TimePicker/README.md" `

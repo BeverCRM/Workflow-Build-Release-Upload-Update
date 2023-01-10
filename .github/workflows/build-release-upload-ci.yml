@@ -389,9 +389,9 @@ jobs:
           inlineScript: |
             az config set extension.use_dynamic_install=yes_without_prompt
             
-            result=az storage blob directory exists \
-            --directory-path "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            result=az storage fs directory exists \
+            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --output tsv
@@ -406,7 +406,6 @@ jobs:
           # --output "tsv"
 
       - name: PRINT RESULT
-        if: ${{ success() }}
         run: |
           echo "The directory already exists: ${{ steps.check-if-directory-already-exists.outputs.result }}"
 

@@ -402,7 +402,6 @@ jobs:
       - name: Delete solution old version directory from Azure storage (if exists)
         id: delete-solution-old-version-directory-from-azure-storage
         if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-directory-already-exists.outputs.result == 'True' }}
-        continue-on-error: true
         uses: Azure/cli@v1
         with:
           inlineScript: |

@@ -394,7 +394,7 @@ jobs:
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --output "tsv"
 
-          echo "result=$result" >> $GITHUB_OUTPUT
+            echo "result=$result" >> $GITHUB_OUTPUT
 
       - name: PRINT RESULT
         run: |

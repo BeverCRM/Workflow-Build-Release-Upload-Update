@@ -387,8 +387,6 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
-            az config set extension.use_dynamic_install=yes_without_prompt
-            
             result=az storage fs directory exists \
             --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \

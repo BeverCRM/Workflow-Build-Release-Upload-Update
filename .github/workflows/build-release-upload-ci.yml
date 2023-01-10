@@ -387,9 +387,9 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
-            az storage fs exists \
-            --path "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            az storage blob directory exists \
+            --directory-path "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --output tsv

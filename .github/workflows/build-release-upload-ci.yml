@@ -394,43 +394,24 @@ jobs:
 
           echo "result=$result" >> $GITHUB_OUTPUT
 
-      - name: PRINT RESULT
+      - name: "Warning - no directory found to delete"
+        if: ${{ steps.check-if-directory-already-exists.outputs.result == 'False' }}
         run: |
-          echo "The directory already exists: ${{ steps.check-if-directory-already-exists.outputs.result }}"
+          echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
 
       - name: Delete solution old version directory from Azure storage (if exists)
         id: delete-solution-old-version-directory-from-azure-storage
-        if: ${{ inputs.delete-old-version-from-azure == true }}
+        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-directory-already-exists.outputs.result == 'True' }}
         continue-on-error: true
         uses: Azure/cli@v1
         with:
           inlineScript: |
             az storage fs directory delete \
             --yes \
-            --fail-not-exist \
             --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
             --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
-
-      # - name: SHOW OUTPUTS
-      #   if: ${{ failure() }}
-      #   run: |
-      #     echo "failure: $?"
-
-      # - name: SHOW OUTPUTS
-      #   run: |
-      #     echo "conclusion: ${{ steps.delete-solution-old-version-directory-from-azure-storage.conclusion }}"
-      #     echo "outcome: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outcome }}"
-      #     echo "error: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outputs.error }}"
-      #     echo "ERROR: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outputs.ERROR }}"
-      #     echo "ErrorCode: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outputs.ErrorCode }}"
-      #     echo "error code: $?"
-
-      # - name: Warning
-      #   if: ${{ steps.delete-solution-old-version-directory-from-azure-storage.outcome == 'failure' }}
-      #   run: |
-      #     echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
 
       - name: Upload `README.md` of the solution new version to Azure storage.
         id: upload-solution-new-version-readme-file-to-azure-storage

@@ -382,21 +382,21 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: github-action/solution/
 
-      - name: Check if directory already exists
-        id: check-if-directory-already-exists
-        run: |
-          result=az storage blob exists \
-          --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
-          --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-          --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-          --output "tsv"
+      # - name: Check if directory already exists
+      #   id: check-if-directory-already-exists
+      #   run: |
+      #     result=az storage blob exists \
+      #     --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
+      #     --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+      #     --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+      #     --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+      #     --output "tsv"
 
-          echo "result=$result" >> $GITHUB_OUTPUT
+      #     echo "result=$result" >> $GITHUB_OUTPUT
 
-      - name: PRINT RESULT
-        run: |
-          echo "The directory already exists: ${{ steps.check-if-directory-already-exists.outputs.result }}"
+      # - name: PRINT RESULT
+      #   run: |
+      #     echo "The directory already exists: ${{ steps.check-if-directory-already-exists.outputs.result }}"
 
       - name: Delete solution old version directory from Azure storage (if exists)
         id: delete-solution-old-version-directory-from-azure-storage
@@ -412,10 +412,10 @@ jobs:
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
-      # - name: SHOW OUTPUTS
-      #   if: ${{ failure() }}
-      #   run: |
-      #     echo "failure: $?"
+      - name: SHOW OUTPUTS
+        if: ${{ failure() }}
+        run: |
+          echo "failure: $?"
 
       # - name: SHOW OUTPUTS
       #   run: |

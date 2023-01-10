@@ -389,7 +389,8 @@ jobs:
           --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" )
+          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+          --output "tsv" )
 
           echo "result=$result" >> $GITHUB_OUTPUT
 

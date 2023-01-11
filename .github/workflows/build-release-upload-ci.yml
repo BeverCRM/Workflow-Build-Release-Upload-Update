@@ -40,7 +40,11 @@ on:
         description: Solution package type to upload to Azure blob storage (unmanaged / managed / both)
         default: managed
         type: string
-      delete-old-version:
+      create-new-release:
+        description: Create a new release in GitHub
+        default: true
+        type: boolean
+      delete-old-version-from-azure:
         description: Delete the old version of the solution from Azure blob storage
         default: true
         type: boolean
@@ -308,6 +312,7 @@ jobs:
     needs:
       - solution-configuration
       - build
+    if: ${{ inputs.create-new-release == true }}
     runs-on: ubuntu-latest
     
     outputs:
@@ -364,6 +369,7 @@ jobs:
     needs:
       - solution-configuration
       - create-release
+    if: ${{ always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -376,10 +382,26 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: github-action/solution/
 
+      - name: Check if directory already exists
+        id: check-if-directory-already-exists
+        run: |
+          result=$( az storage blob exists \
+          --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
+          --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+          --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+          --output "tsv" )
+
+          echo "result=$result" >> $GITHUB_OUTPUT
+
+      - name: "Warning - no directory found to delete"
+        if: ${{ steps.check-if-directory-already-exists.outputs.result == 'False' }}
+        run: |
+          echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
+
       - name: Delete solution old version directory from Azure storage (if exists)
         id: delete-solution-old-version-directory-from-azure-storage
-        if: ${{ inputs.delete-old-version == true }}
-        continue-on-error: true
+        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-directory-already-exists.outputs.result == 'True' }}
         uses: Azure/cli@v1
         with:
           inlineScript: |

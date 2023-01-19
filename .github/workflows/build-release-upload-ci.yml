@@ -207,6 +207,7 @@ jobs:
           publisher-street: 'Abelian 6/4'
           publisher-postal-code: '0038'
         run: |
+          $CurrentYear = Get-Date -Format yyyy
           $FileName = "${{ inputs.solution-folder }}/src/Other/Solution.xml"
           [xml]$XmlDocument = Get-Content -Path $FileName
 
@@ -216,7 +217,7 @@ jobs:
           $XmlDocument.ImportExportXml.SolutionManifest.Managed = "2"
           
           $XmlDocument.ImportExportXml.SolutionManifest.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
-          $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ inputs.control-description }}")
+          $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "PCF - ${{ inputs.control-title }} &#xA; &#xA;${{ inputs.control-description }} &#xA; &#xA;https://marketplace.bevercrm.com &#xA; &#xA;© $CurrentYear BEVER")
           $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
 
           $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"

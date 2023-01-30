@@ -217,7 +217,7 @@ jobs:
           $XmlDocument.ImportExportXml.SolutionManifest.Managed = "2"
           
           $XmlDocument.ImportExportXml.SolutionManifest.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
-          $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "PCF - ${{ inputs.control-title }} &#xA; &#xA;${{ inputs.control-description }} &#xA; &#xA;https://marketplace.bevercrm.com &#xA; &#xA;© $CurrentYear BEVER")
+          $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "PCF - ${{ inputs.control-title }} &#xA;&#xA;${{ inputs.control-description }} &#xA;&#xA;https://marketplace.bevercrm.com &#xA;&#xA;&#169; $CurrentYear BEVER")
           $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
 
           $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"

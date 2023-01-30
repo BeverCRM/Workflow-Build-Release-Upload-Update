@@ -198,7 +198,7 @@ jobs:
         env:
           publisher-name: 'Bever'
           publisher-prefix: 'bvr'
-          publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 &amp; Power Platform.'
+          publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 & Power Platform.'
           publisher-email: 'info@bevercrm.com'
           publisher-phone: '+374 (77) 590071'
           publisher-website: 'https://bevercrm.com'
@@ -207,9 +207,16 @@ jobs:
           publisher-street: 'Abelian 6/4'
           publisher-postal-code: '0038'
         run: |
-          $CurrentYear = Get-Date -Format yyyy
           $FileName = "${{ inputs.solution-folder }}/src/Other/Solution.xml"
           [xml]$XmlDocument = Get-Content -Path $FileName
+
+          $SolutionDescription = "PCF - ${{ inputs.control-title }}
+        
+          ${{ inputs.control-description }}
+        
+          https://marketplace.bevercrm.com
+        
+          © $( Get-Date -Format yyyy ) BEVER"
 
           $XmlDocument.ImportExportXml.SolutionManifest.UniqueName = "${{ steps.get-solution-data.outputs.unique-name }}"
           $XmlDocument.ImportExportXml.SolutionManifest.LocalizedNames.LocalizedName.description = "${{ steps.get-solution-data.outputs.unique-name }}"
@@ -217,7 +224,7 @@ jobs:
           $XmlDocument.ImportExportXml.SolutionManifest.Managed = "2"
           
           $XmlDocument.ImportExportXml.SolutionManifest.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
-          $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", "PCF - ${{ inputs.control-title }} &#xA;&#xA;${{ inputs.control-description }} &#xA;&#xA;https://marketplace.bevercrm.com &#xA;&#xA;&#169; $CurrentYear BEVER")
+          $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", $SolutionDescription)
           $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
 
           $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"

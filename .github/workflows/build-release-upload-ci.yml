@@ -153,6 +153,7 @@ jobs:
       - name: Update `README.md` and copy to `${{ inputs.solution-folder }}/README.md`
         id: update-readme-md
         run: |
+          $controlTags = "${{ inputs.control-tags }}"
           $README = Get-Content -Path "README.md"
 
           $NewContent = "---
@@ -164,7 +165,7 @@ jobs:
           youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
           price: ${{ inputs.control-price }}
           imgExtension: ${{ inputs.control-img-extension }}
-          tags: [Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if (${{ inputs.control-tags }}) { ", ${{ inputs.control-tags }}" } )]
+          tags: [Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ($controlTags) { ", ${{ inputs.control-tags }}" } )]
           ---
           "
 

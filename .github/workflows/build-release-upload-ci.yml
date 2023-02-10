@@ -22,7 +22,7 @@ on:
         default: png
         type: string
       control-tags:
-        description: Control tags (comma separated | added by default `Bever-Controls, PCF`)
+        description: Control tags (comma separated | added by default `Bever-Controls, PCF, <control unique name>`)
         type: string
       solution-folder:
         description: Final solution directory
@@ -164,7 +164,7 @@ jobs:
           youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
           price: ${{ inputs.control-price }}
           imgExtension: ${{ inputs.control-img-extension }}
-          tags: [ ${{ inputs.control-tags }}, Bever-Controls, PCF ]
+          tags: [Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if (${{ inputs.control-tags }}) { ", ${{ inputs.control-tags }}" } )]
           ---
           "
 
@@ -347,7 +347,7 @@ jobs:
         with:
           tag_name: v${{ needs.solution-configuration.outputs.solution-version }}
           release_name: v${{ needs.solution-configuration.outputs.solution-version }}
-          body_path: CHANGELOG.md
+          body: Please refer to [CHANGELOG.md](https://github.com/BeverCRM/PCF-${{ needs.solution-configuration.outputs.solution-unique-name }}/blob/master/CHANGELOG.md) for details.
 
       - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` (unmanaged)
         id: release-unmanaged-solution

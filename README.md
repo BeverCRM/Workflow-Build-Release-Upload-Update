@@ -67,7 +67,7 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>string</td>
     <td>Bever-Controls, PCF</td>
     <td>---</td>
-    <td>Control tags (comma separated | added by default `Bever-Controls, PCF`)</td>
+    <td>Control tags (comma separated | added by default `Bever-Controls, PCF, &lt;control unique name&gt;`)</td>
   </tr>
   <tr>
     <td>solution-folder</td>

@@ -38,6 +38,22 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>Control description</td>
   </tr>
   <tr>
+    <td>control-thumbnail-url</td>
+    <td>Optional</td>
+    <td>string</td>
+    <td>---</td>
+    <td>---</td>
+    <td>Control thumbnail url</td>
+  </tr>
+  <tr>
+    <td>control-primary-image-url</td>
+    <td>Optional</td>
+    <td>string</td>
+    <td>---</td>
+    <td>---</td>
+    <td>Control primary image url</td>
+  </tr>
+  <tr>
     <td>control-youtube-video-url</td>
     <td>Optional</td>
     <td>string</td>
@@ -218,6 +234,8 @@ jobs:
     with:
       control-title: Sample Custom Component # required
       # control-description: '' # default
+      # control-thumbnail-url: '' # default
+      # control-primary-image-url: '' # default
       # control-youtube-video-url: '' # default
       # control-price: Free # default
       # control-img-extension: png # default

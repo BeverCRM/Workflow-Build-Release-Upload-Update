@@ -10,6 +10,12 @@ on:
       control-description:
         description: Control description
         type: string
+      control-thumbnail-url:
+        description: Cotnrol thumbnail url
+        type: string
+      control-primary-image-url:
+        description: Cotnrol primary image url
+        type: string
       control-youtube-video-url:
         description: Cotnrol youtube video url
         type: string
@@ -162,6 +168,8 @@ jobs:
           version: v${{ steps.get-solution-data.outputs.version }}
           blobPath: ${{ steps.get-solution-data.outputs.unique-name }}/${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
           gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
+          thumbnailUrl: ${{ inputs.control-thumbnail-url }}
+          primaryImageUrl: ${{ inputs.control-primary-image-url }}
           youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
           price: ${{ inputs.control-price }}
           imgExtension: ${{ inputs.control-img-extension }}

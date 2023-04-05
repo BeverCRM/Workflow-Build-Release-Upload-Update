@@ -295,15 +295,15 @@ jobs:
         id: install-dependecies
         run: npm ci
 
-      - name: Refresh types
-        id: refresh-types
-        run: npm run refreshTypes
+      # - name: Refresh types
+      #   id: refresh-types
+      #   run: npm run refreshTypes
 
-      - name: Build project
-        id: build-project
-        run: |
-          npm run clean --if-present
-          npm run build -- --buildMode production --if-present
+      # - name: Build project
+      #   id: build-project
+      #   run: |
+      #     npm run clean --if-present
+      #     npm run build -- --buildMode production --if-present
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1

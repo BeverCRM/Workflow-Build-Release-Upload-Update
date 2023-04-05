@@ -1,5 +1,8 @@
 name: Reusable Workflow - Build & Release & Upload CI
 
+# TODO: check if npm run build can be removed
+# TODO: make configurations for marketplace db
+
 on:
   workflow_call:
     inputs:

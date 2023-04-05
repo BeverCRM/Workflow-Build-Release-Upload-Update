@@ -2,6 +2,7 @@ name: Reusable Workflow - Build & Release & Upload CI
 
 # TODO: check if npm run build can be removed
 # TODO: make configurations for marketplace db
+# TODO: install and use pac cli
 
 on:
   workflow_call:
@@ -159,29 +160,29 @@ jobs:
           "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
           "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
-      - name: Update `README.md` and copy to `${{ inputs.solution-folder }}/README.md`
-        id: update-readme-md
-        run: |
-          $controlTags = "${{ inputs.control-tags }}"
-          $README = Get-Content -Path "README.md"
+      # - name: Update `README.md` and copy to `${{ inputs.solution-folder }}/README.md`
+      #   id: update-readme-md
+      #   run: |
+      #     $controlTags = "${{ inputs.control-tags }}"
+      #     $README = Get-Content -Path "README.md"
 
-          $NewContent = "---
-          title: ${{ inputs.control-title }}
-          description: ${{ inputs.control-description }}
-          version: v${{ steps.get-solution-data.outputs.version }}
-          blobPath: ${{ steps.get-solution-data.outputs.unique-name }}/${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
-          gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
-          thumbnailUrl: ${{ inputs.control-thumbnail-url }}
-          primaryImageUrl: ${{ inputs.control-primary-image-url }}
-          youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
-          price: ${{ inputs.control-price }}
-          imgExtension: ${{ inputs.control-img-extension }}
-          tags: [Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ($controlTags) { ", ${{ inputs.control-tags }}" } )]
-          ---
-          "
+      #     $NewContent = "---
+      #     title: ${{ inputs.control-title }}
+      #     description: ${{ inputs.control-description }}
+      #     version: v${{ steps.get-solution-data.outputs.version }}
+      #     blobPath: ${{ steps.get-solution-data.outputs.unique-name }}/${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
+      #     gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
+      #     thumbnailUrl: ${{ inputs.control-thumbnail-url }}
+      #     primaryImageUrl: ${{ inputs.control-primary-image-url }}
+      #     youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
+      #     price: ${{ inputs.control-price }}
+      #     imgExtension: ${{ inputs.control-img-extension }}
+      #     tags: [Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ($controlTags) { ", ${{ inputs.control-tags }}" } )]
+      #     ---
+      #     "
 
-          Set-Content -Path "${{ inputs.solution-folder }}/README.md" -Value $NewContent
-          Add-Content -Path "${{ inputs.solution-folder }}/README.md" -Value $README
+      #     Set-Content -Path "${{ inputs.solution-folder }}/README.md" -Value $NewContent
+      #     Add-Content -Path "${{ inputs.solution-folder }}/README.md" -Value $README
 
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj
@@ -317,9 +318,9 @@ jobs:
         id: rename-solution-files
         run: get-childitem -path github-action/solution/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
 
-      - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
-        id: move-readme-md
-        run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
+      # - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
+      #   id: move-readme-md
+      #   run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
 
       - name: Upload solution artifacts
         id: upload-solution-artifacts
@@ -402,11 +403,23 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: github-action/solution/
 
+      # - name: Check if directory already exists
+      #   id: check-if-directory-already-exists
+      #   run: |
+      #     result=$( az storage blob exists \
+      #     --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
+      #     --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+      #     --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+      #     --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+      #     --output "tsv" )
+
+      #     echo "result=$result" >> $GITHUB_OUTPUT
+
       - name: Check if directory already exists
         id: check-if-directory-already-exists
         run: |
-          result=$( az storage blob exists \
-          --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
+          result=$( az storage blob directory exists \
+          --directory-path "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
@@ -432,19 +445,19 @@ jobs:
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
-      - name: Upload `README.md` of the solution new version to Azure storage.
-        id: upload-solution-new-version-readme-file-to-azure-storage
-        if: ${{ inputs.azure-solution-package-type != 'both' }}
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az storage blob upload \
-            --file "github-action/solution/README.md" \
-            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --content-type text/markdown \
-            --overwrite true
+      # - name: Upload `README.md` of the solution new version to Azure storage.
+      #   id: upload-solution-new-version-readme-file-to-azure-storage
+      #   if: ${{ inputs.azure-solution-package-type != 'both' }}
+      #   uses: Azure/cli@v1
+      #   with:
+      #     inlineScript: |
+      #       az storage blob upload \
+      #       --file "github-action/solution/README.md" \
+      #       --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+      #       --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+      #       --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+      #       --content-type text/markdown \
+      #       --overwrite true
 
       - name: Upload solution new version files (unmanaged & managed) to Azure storage
         id: upload-solution-new-version-files-to-azure-storage
@@ -487,3 +500,56 @@ jobs:
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --content-type application/zip \
             --overwrite true
+
+  upload-to-azure-storage:
+    needs:
+      - upload-to-azure-storage
+    if: ${{ always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # - name: Check if the control already exists in DB
+      # - name: Update if exists
+      # - name: Create a new raw if doesn't exist
+
+      - name: Create a new raw of pcf_control table in Azure SQL DB
+        uses: azure/sql-action@v2.1
+        with:
+          # required, connection string incl the database and user authentication information
+          connection-string:
+
+          # required, path to either a .sql, .dacpac, or .sqlproj file
+          path:
+
+          # optional when using a .sql script, required otherwise
+          # sqlpackage action on the .dacpac or .sqlproj file, supported options are: Publish, Script, DeployReport, DriftReport
+          action:
+
+          # optional additional sqlpackage or go-sqlcmd arguments
+          arguments:
+
+          # optional additional dotnet build options when building a database project file
+          build-arguments:
+
+
+      - name: Generate SQL script to insert record
+        uses: microsoft/mssql-scripter@v1
+        with:
+          script-destination: ./insert.sql
+          server: your-server-name.database.windows.net
+          database: your-database-name
+          username: ${{ secrets.DB_USERNAME }}
+          password: ${{ secrets.DB_PASSWORD }}
+        run: |
+          echo "INSERT INTO your-table-name (column1, column2, column3) VALUES ('value1', 'value2', 'value3');" >> ./insert.sql
+
+      - name: Execute SQL script to insert record
+        uses: microsoft/mssql-cli@v1
+        with:
+          server: your-server-name.database.windows.net
+          database: your-database-name
+          username: ${{ secrets.DB_USERNAME }}
+          password: ${{ secrets.DB_PASSWORD }}
+          file: ./insert.sql

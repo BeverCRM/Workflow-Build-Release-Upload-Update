@@ -448,6 +448,10 @@ jobs:
 
       - name: Display Value (tmp/check.sql 1)
         run: |
+          echo "SELECT pcf_control_id FROM pcf_control WHERE name = '${{ inputs.control-title }}'"
+
+      - name: Display Value (tmp/check.sql 2)
+        run: |
           echo "
             SELECT CASE WHEN EXISTS(
               SELECT pcf_control_id FROM pcf_control
@@ -455,10 +459,6 @@ jobs:
                 THEN 'true'
                 ELSE 'false'
               END AS exists"
-
-      - name: Display Value (tmp/check.sql 2)
-        run: |
-          echo "SELECT pcf_control_id FROM pcf_control WHERE name = '${{ inputs.control-title }}'"
 
       - name: Display Value (tmp/update.sql)
         run: |
@@ -475,7 +475,7 @@ jobs:
               primary-image-url = '$primaryImageUrl'
               markdown_file_url = '$markdownFileUrl'
               youtube_url = '${{ inputs.control-youtube-video-url }}'
-              github_repo_url = 'https://github.com/${{ ${{ env.GITHUB_REPOSITORY }} }}'
+              github_repo_url = 'https://github.com/${{ env.GITHUB_REPOSITORY }}'
               blob_url = '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
               version = 'v${{ needs.solution-configuration.outputs.solution-version }}'
               tags = '${{ inputs.control-tags }}'
@@ -492,7 +492,7 @@ jobs:
               '$primaryImageUrl',
               '$markdownFileUrl',
               '${{ inputs.control-youtube-video-url }}',
-              'https://github.com/${{ ${{ env.GITHUB_REPOSITORY }} }}',
+              'https://github.com/${{ env.GITHUB_REPOSITORY }}',
               '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
               'v${{ needs.solution-configuration.outputs.solution-version }}',
               '${{ inputs.control-tags }}'
@@ -558,7 +558,7 @@ jobs:
         #         primary-image-url = '$primaryImageUrl'
         #         markdown_file_url = '$markdownFileUrl'
         #         youtube_url = '${{ inputs.control-youtube-video-url }}'
-        #         github_repo_url = 'https://github.com/${{ ${{ env.GITHUB_REPOSITORY }} }}'
+        #         github_repo_url = 'https://github.com/${{ env.GITHUB_REPOSITORY }}'
         #         blob_url = '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
         #         version = 'v${{ needs.solution-configuration.outputs.solution-version }}'
         #         tags = '${{ inputs.control-tags }}'
@@ -573,7 +573,7 @@ jobs:
         #         '$primaryImageUrl',
         #         '$markdownFileUrl',
         #         '${{ inputs.control-youtube-video-url }}',
-        #         'https://github.com/${{ ${{ env.GITHUB_REPOSITORY }} }}',
+        #         'https://github.com/${{ env.GITHUB_REPOSITORY }}',
         #         '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
         #         'v${{ needs.solution-configuration.outputs.solution-version }}',
         #         '${{ inputs.control-tags }}'
@@ -636,7 +636,7 @@ jobs:
       #         primary-image-url = '$primaryImageUrl'
       #         markdown_file_url = '$markdownFileUrl'
       #         youtube_url = '${{ inputs.control-youtube-video-url }}'
-      #         github_repo_url = 'https://github.com/${{ ${{ env.GITHUB_REPOSITORY }} }}'
+      #         github_repo_url = 'https://github.com/${{ env.GITHUB_REPOSITORY }}'
       #         blob_url = '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
       #         version = 'v${{ needs.solution-configuration.outputs.solution-version }}'
       #         tags = '${{ inputs.control-tags }}'

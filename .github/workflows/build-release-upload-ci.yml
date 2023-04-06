@@ -176,7 +176,7 @@ jobs:
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data
         run: |
-          $ControlManifest=Get-ChildItem "*/ControlManifest.input.xml"
+          $ControlManifest=Get-ChildItem "*/ControlManifest.Input.xml"
           [xml]$XmlDocument=Get-Content -Path $ControlManifest.FullName
           "unique-name=$( $XmlDocument.manifest.control.constructor )" >> $env:GITHUB_OUTPUT
           "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
@@ -564,12 +564,12 @@ jobs:
           echo "
             UPDATE pcf_control
             SET
-              name = '${{ input.control-title }}'
-              description = '${{ input.control-description }}'
+              name = '${{ inputs.control-title }}'
+              description = '${{ inputs.control-description }}'
               thumbnail_url = '$tumbnailUrl'
               primary-image-url = '$primaryImageUrl'
               markdown_file_url = '$markdownFileUrl'
-              youtube_url = '${{ input.control-youtube-video-url }}'
+              youtube_url = '${{ inputs.control-youtube-video-url }}'
               github_repo_url = 'https://github.com/${{ process.env.GITHUB_REPOSITORY }}'
               blob_url = '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
               version = 'v${{ needs.solution-configuration.outputs.solution-version }}'
@@ -581,12 +581,12 @@ jobs:
           echo "
             INSERT INTO pcf_control (name, description, thumbnail_url, primary_image_url, markdown_file_url, youtube_url, github_repo_url, blob_url, version, tags)
             VALUES (
-              '${{ input.control-title }}',
-              '${{ input.control-description }}',
+              '${{ inputs.control-title }}',
+              '${{ inputs.control-description }}',
               '$tumbnailUrl',
               '$primaryImageUrl',
               '$markdownFileUrl',
-              '${{ input.control-youtube-video-url }}',
+              '${{ inputs.control-youtube-video-url }}',
               'https://github.com/${{ process.env.GITHUB_REPOSITORY }}',
               '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
               'v${{ needs.solution-configuration.outputs.solution-version }}',
@@ -647,12 +647,12 @@ jobs:
         #     BEGIN
         #       UPDATE pcf_control
         #       SET
-        #         name = '${{ input.control-title }}'
-        #         description = '${{ input.control-description }}'
+        #         name = '${{ inputs.control-title }}'
+        #         description = '${{ inputs.control-description }}'
         #         thumbnail_url = '$tumbnailUrl'
         #         primary-image-url = '$primaryImageUrl'
         #         markdown_file_url = '$markdownFileUrl'
-        #         youtube_url = '${{ input.control-youtube-video-url }}'
+        #         youtube_url = '${{ inputs.control-youtube-video-url }}'
         #         github_repo_url = 'https://github.com/${{ process.env.GITHUB_REPOSITORY }}'
         #         blob_url = '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
         #         version = 'v${{ needs.solution-configuration.outputs.solution-version }}'
@@ -662,12 +662,12 @@ jobs:
         #     ELSE
         #       INSERT INTO pcf_control (name, description, thumbnail_url, primary_image_url, markdown_file_url, youtube_url, github_repo_url, blob_url, version, tags)
         #       VALUES (
-        #         '${{ input.control-title }}',
-        #         '${{ input.control-description }}',
+        #         '${{ inputs.control-title }}',
+        #         '${{ inputs.control-description }}',
         #         '$tumbnailUrl',
         #         '$primaryImageUrl',
         #         '$markdownFileUrl',
-        #         '${{ input.control-youtube-video-url }}',
+        #         '${{ inputs.control-youtube-video-url }}',
         #         'https://github.com/${{ process.env.GITHUB_REPOSITORY }}',
         #         '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
         #         'v${{ needs.solution-configuration.outputs.solution-version }}',
@@ -725,12 +725,12 @@ jobs:
       #     echo "
       #       UPDATE pcf_control
       #       SET
-      #         name = '${{ input.control-title }}'
-      #         description = '${{ input.control-description }}'
+      #         name = '${{ inputs.control-title }}'
+      #         description = '${{ inputs.control-description }}'
       #         thumbnail_url = '$tumbnailUrl'
       #         primary-image-url = '$primaryImageUrl'
       #         markdown_file_url = '$markdownFileUrl'
-      #         youtube_url = '${{ input.control-youtube-video-url }}'
+      #         youtube_url = '${{ inputs.control-youtube-video-url }}'
       #         github_repo_url = 'https://github.com/${{ process.env.GITHUB_REPOSITORY }}'
       #         blob_url = '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
       #         version = 'v${{ needs.solution-configuration.outputs.solution-version }}'

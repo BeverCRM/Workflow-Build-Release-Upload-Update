@@ -430,7 +430,7 @@ jobs:
     needs:
       - solution-configuration
       - upload-to-azure-storage
-    # if: ${{ false }}
+    if: ${{ true }}
     runs-on: ubuntu-latest
 
     env:

@@ -426,7 +426,7 @@ jobs:
             --content-type application/zip \
             --overwrite true
 
-  update-databse:
+  update-database:
     needs:
       - solution-configuration
       - upload-to-azure-storage

@@ -173,6 +173,10 @@ jobs:
             const { data } = await github.rest.repos.get({ owner, repo });
             return data;
 
+      - name: Display Value (github.rest.repos.get)
+        run: |
+          echo "${{ steps.get-repo-metadata.outputs.result }}"
+
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data
         run: |

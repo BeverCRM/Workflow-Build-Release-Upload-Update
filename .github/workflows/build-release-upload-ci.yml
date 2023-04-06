@@ -170,7 +170,7 @@ jobs:
           # result-encoding: string
           script: |
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-            const { data } = await github.repos.get({ owner, repo });
+            const { data } = await github.rest.repos.get({ owner, repo });
             return data;
 
       - name: Get solution data from `ControlManifest.Input.xml`

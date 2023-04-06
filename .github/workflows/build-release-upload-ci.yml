@@ -155,6 +155,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - run: exit 1
+
       - name: Get repository metadata
         id: get-repo-metadata
         uses: actions/github-script@v6
@@ -162,7 +164,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # result-encoding: string
           script: |
-            const [owner, repo] = ${{ process.env.GITHUB_REPOSITORY }}.split("/");
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
             return data;
 

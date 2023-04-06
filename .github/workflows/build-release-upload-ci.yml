@@ -162,7 +162,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # result-encoding: string
           script: |
-            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+            const [owner, repo] = ${{ process.env.GITHUB_REPOSITORY }}.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
             return data;
 

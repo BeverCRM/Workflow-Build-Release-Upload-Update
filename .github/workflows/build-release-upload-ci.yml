@@ -3,6 +3,7 @@ name: Reusable Workflow - Build & Release & Upload CI
 # TODO: check if npm run build can be removed
 # TODO: make configurations for marketplace db
 # TODO: install and use pac cli
+# TODO: remove input params control-price and control-img-extension
 
 on:
   workflow_call:
@@ -26,14 +27,6 @@ on:
       control-markdown-file-url: # TODO: new
         description: Cotnrol markdown file url (included in use-default)
         type: string
-      # control-price: # TODO: remove
-      #   description: Cotnrol price
-      #   default: Free
-      #   type: string
-      # control-img-extension: # TODO: remove
-      #   description: Cotnrol images extension
-      #   default: png
-      #   type: string
       control-tags:
         description: Control tags (comma separated | added by default `Bever-Controls, PCF, <control unique name>`)
         type: string
@@ -187,30 +180,6 @@ jobs:
           "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
           "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
-      # - name: Update `README.md` and copy to `${{ inputs.solution-folder }}/README.md`
-      #   id: update-readme-md
-      #   run: |
-      #     $controlTags = "${{ inputs.control-tags }}"
-      #     $README = Get-Content -Path "README.md"
-
-      #     $NewContent = "---
-      #     title: ${{ inputs.control-title }}
-      #     description: ${{ inputs.control-description }}
-      #     version: v${{ steps.get-solution-data.outputs.version }}
-      #     blobPath: ${{ steps.get-solution-data.outputs.unique-name }}/${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
-      #     gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
-      #     thumbnailUrl: ${{ inputs.control-thumbnail-url }}
-      #     primaryImageUrl: ${{ inputs.control-primary-image-url }}
-      #     youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
-      #     price: ${{ inputs.control-price }}
-      #     imgExtension: ${{ inputs.control-img-extension }}
-      #     tags: [Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ($controlTags) { ", ${{ inputs.control-tags }}" } )]
-      #     ---
-      #     "
-
-      #     Set-Content -Path "${{ inputs.solution-folder }}/README.md" -Value $NewContent
-      #     Add-Content -Path "${{ inputs.solution-folder }}/README.md" -Value $README
-
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj
         run: |
@@ -323,16 +292,6 @@ jobs:
         id: install-dependecies
         run: npm ci
 
-      # - name: Refresh types
-      #   id: refresh-types
-      #   run: npm run refreshTypes
-
-      # - name: Build project
-      #   id: build-project
-      #   run: |
-      #     npm run clean --if-present
-      #     npm run build -- --buildMode production --if-present
-
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
@@ -344,10 +303,6 @@ jobs:
       - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` &  `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
         id: rename-solution-files
         run: get-childitem -path tmp/solution/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
-
-      # - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
-      #   id: move-readme-md
-      #   run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
 
       - name: Upload solution artifacts
         id: upload-solution-artifacts
@@ -446,7 +401,7 @@ jobs:
       - name: Check if directory already exists
         id: check-if-directory-already-exists
         run: |
-          result=$( az storage blob directory exists \
+          result=$( az storage blob exists \
           --directory-path "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \

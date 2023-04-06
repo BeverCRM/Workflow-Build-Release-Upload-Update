@@ -344,7 +344,7 @@ jobs:
         id: check-if-directory-already-exists
         run: |
           result=$( az storage blob exists \
-          --directory-path "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+          --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
@@ -649,10 +649,10 @@ jobs:
       #       column1: ${{ steps.get-row.outputs.result[0].column1 }}
       #       column2: ${{ steps.get-row.outputs.result[0].column2 }}
 
-  create-release:
+  create-release: 
     needs:
       - solution-configuration
-      - upload-to-azure-storage
+      - update-database
     if: ${{ inputs.create-new-release == true }}
     runs-on: ubuntu-latest
     

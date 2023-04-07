@@ -469,9 +469,9 @@ jobs:
           tumbnailUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}"; else echo "${{ inputs.control-thumbnail-url }}"; fi)"
           primaryImageUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-primary-image-url }}"; else echo "${{ inputs.control-primary-image-url }}"; fi)"
           markdownFileUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}"; else echo "${{ inputs.control-markdown-file-url }}"; fi)"
-          "thumbnail-url=$tumbnailUrl" >> $env:GITHUB_OUTPUT
-          "primary-image-url=$primaryImageUrl" >> $env:GITHUB_OUTPUT
-          "markdown-file-url=$markdownFileUrl" >> $env:GITHUB_OUTPUT
+          "thumbnail-url='$tumbnailUrl'" >> $env:GITHUB_OUTPUT
+          "primary-image-url='$primaryImageUrl'" >> $env:GITHUB_OUTPUT
+          "markdown-file-url='$markdownFileUrl'" >> $env:GITHUB_OUTPUT
 
       - name: Display Value (tmp/update.sql)
         run: |

@@ -172,11 +172,6 @@ jobs:
           script: |
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
-
-            data['thumbnail-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/thumbnail.png`;
-            data['primary-image-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/primary.png`;
-            data['markdown-file-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`;
-
             return data;
 
       - name: Display Value (get-repo-metadata) # TODO: remove

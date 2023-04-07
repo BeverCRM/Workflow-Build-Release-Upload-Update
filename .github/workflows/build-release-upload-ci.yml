@@ -174,7 +174,7 @@ jobs:
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
 
-            data.thumbnail_url = `${data.html_url}/blob/${github.ref}/MarketplaceAssets/images/thumbnail.png`;
+            data.thumbnail_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/thumbnail.png`;
             data.primary_image_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
             data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
 
@@ -182,7 +182,10 @@ jobs:
 
       - name: Display Value (get-repo-metadata) # TODO: remove
         run: |
-          echo "data: fromJson(${{ steps.get-repo-metadata.outputs.result }})"
+          echo "
+            thumbnail_url: fromJson(${{ steps.get-repo-metadata.outputs.result }}).thumbnail_url
+            primary_image_url: fromJson(${{ steps.get-repo-metadata.outputs.result }}).primary_image_url
+            markdown_file_url: fromJson(${{ steps.get-repo-metadata.outputs.result }}).markdown_file_url"
 
       - name: Get control data
         id: get-control-data

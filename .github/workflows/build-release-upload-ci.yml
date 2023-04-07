@@ -176,7 +176,7 @@ jobs:
 
       - name: Display Value (get-repo-metadata) # TODO: remove
         run: |
-          echo "data: ${{ steps.get-repo-metadata.outputs.data }}"
+          echo "data: ${{ steps.get-repo-metadata.outputs.result }}"
 
       - name: Get control data
         id: get-control-data

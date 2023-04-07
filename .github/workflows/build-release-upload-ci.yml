@@ -177,20 +177,15 @@ jobs:
             data['primary-image-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/primary.png`;
             data['markdown-file-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`;
 
-            return {
-              data,
-              ['thumbnail-url']: `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/thumbnail.png`,
-              ['primary-image-url']: `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/primary.png`,
-              ['markdown-file-url']: `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`,
-            };
+            return data;
 
       - name: Display Value (get-repo-metadata) # TODO: remove
         run: |
           echo "
             repo-url: ${{ steps.get-repo-metadata.outputs.data.html_url }}
-            thumbnail-url: ${{ steps.get-repo-metadata.outputs.thumbnail-url }}
-            primary-image-url: ${{ steps.get-repo-metadata.outputs.primary-image-url }}
-            markdown-file-url: ${{ steps.get-repo-metadata.outputs.markdown-file-url }}"
+            thumbnail-url: ${{ steps.get-repo-metadata.outputs.data.thumbnail-url }}
+            primary-image-url: ${{ steps.get-repo-metadata.outputs.data.primary-image-url }}
+            markdown-file-url: ${{ steps.get-repo-metadata.outputs.data.markdown-file-url }}"
 
       - name: Get control data
         id: get-control-data

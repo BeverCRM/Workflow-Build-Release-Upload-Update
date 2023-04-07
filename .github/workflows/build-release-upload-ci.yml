@@ -497,14 +497,14 @@ jobs:
       - name: Display Value (tmp/create.sql) # TODO: remove
         run: |
           echo "
-            INSERT INTO ${{ env.db-table-name }} (name, description, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, github_repo_url, blob_url, version, tags)
+            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
             VALUES (
               '${{ inputs.control-title }}',
-              '${{ needs.solution-configuration.ouputs.control-description }}',
               '${{ inputs.control-youtube-video-url }}',
               '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
               '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
               '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+              '${{ needs.solution-configuration.ouputs.control-description }}',
               '${{ needs.solution-configuration.outputs.repo-url }}',
               '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
               'v${{ needs.solution-configuration.outputs.solution-version }}',

@@ -4,6 +4,7 @@ name: Reusable Workflow - Build & Release & Upload CI
 # TODO: make configurations for marketplace db
 # TODO: install and use pac cli
 # TODO: remove input params control-price and control-img-extension
+# TODO: check if input-validation works fine  
 
 on:
   workflow_call:
@@ -158,10 +159,15 @@ jobs:
       default-control-primary-image-url: ${{ steps.get-repo-metadata.outputs.data.primary-image-url }}
       default-control-markdown-file-url: ${{ steps.get-repo-metadata.outputs.data.markdown-file-url }}
       repo-url: ${{ steps.get-repo-metadata.outputs.data.html_url }}
-      control-tags: 'Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if (${{ inputs.control-tags }}) { ", ${{ inputs.control-tags }}" } )'
+      control-tags: ${{ steps.get-control-data.outputs.control-tags }}
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Get control data
+        id: get-control-data
+        run: |
+          "control-tags='Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if (${{ inputs.control-tags }}) { ", ${{ inputs.control-tags }}" } )'" >> $env:GITHUB_OUTPUT
 
       - name: Get repository metadata
         id: get-repo-metadata

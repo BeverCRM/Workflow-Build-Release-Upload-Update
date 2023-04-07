@@ -170,13 +170,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
 
             const controlData = {
-              thumbnail_url: `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/thumbnail.png`,
-              primary_image_url: `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/primary.png`,
-              markdown_file_url: `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`,
+              thumbnail_url: `${data.html_url}/blob/${github.ref}/MarketplaceAssets/images/thumbnail.png`,
+              primary_image_url: `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`,
+              markdown_file_url: `${data.html_url}/blob/${branchName}/README.md`,
             };
 
             return {

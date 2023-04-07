@@ -172,6 +172,10 @@ jobs:
 
             return data;
 
+      - name: Displauy Value (metadata)
+        run: |
+          echo "${{ steps.get-repo-metadata.outputs.data }}"
+
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data
         run: |

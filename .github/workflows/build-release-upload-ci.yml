@@ -154,9 +154,9 @@ jobs:
       solution-version: ${{ steps.get-solution-data.outputs.version }}
       solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
       solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
-      default-control-thumbnail-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url
-      default-control-primary-image-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_image_url
-      default-control-markdown-file-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url
+      default-control-thumbnail-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}
+      default-control-primary-image-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_image_url }}
+      default-control-markdown-file-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}
       repo-url: ${{ steps.get-repo-metadata.outputs.result.html_url }}
       control-description: ${{ steps.get-control-data.outputs.control-description }}
       control-tags: ${{ steps.get-control-data.outputs.control-tags }}

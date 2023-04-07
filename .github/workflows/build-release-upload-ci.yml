@@ -172,11 +172,21 @@ jobs:
           script: |
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
-            return data;
+
+            const controlData = {
+              thumbnail_url: `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/thumbnail.png`,
+              primary_image_url: `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/primary.png`,
+              markdown_file_url: `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`,
+            };
+
+            return {
+              data,
+              control_data: controlData,
+            };
 
       - name: Display Value (get-repo-metadata) # TODO: remove
         run: |
-          echo "data: '${{ steps.get-repo-metadata.outputs.result.hmtl_url }}'"
+          echo "data: '${{ steps.get-repo-metadata.outputs.result }}'"
 
       - name: Get control data
         id: get-control-data

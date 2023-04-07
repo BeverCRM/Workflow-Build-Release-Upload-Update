@@ -166,12 +166,12 @@ jobs:
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
             return data;
-        outputs:
-          repo-url: ${{ steps.get-repo-metadata.outputs.data.html_url }}
-          repo-description: ${{ steps.get-repo-metadata.outputs.data.description }}
-          thumbnail-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/MarketplaceAssets/images/thumbnail.png'
-          primary-image-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/MarketplaceAssets/images/primary.png'
-          markdown-file-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/README.md'
+          outputs:
+            repo-url: ${{ steps.get-repo-metadata.outputs.data.html_url }}
+            repo-description: ${{ steps.get-repo-metadata.outputs.data.description }}
+            thumbnail-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/MarketplaceAssets/images/thumbnail.png'
+            primary-image-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/MarketplaceAssets/images/primary.png'
+            markdown-file-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/README.md'
 
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data

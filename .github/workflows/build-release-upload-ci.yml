@@ -179,6 +179,14 @@ jobs:
 
             return data;
 
+      - name: Display Value (get-repo-metadata) # TODO: remove
+        run: |
+          echo "
+            repo-url: ${{ steps.get-repo-metadata.outputs.data.html_url }}
+            thumbnail-url: ${{ steps.get-repo-metadata.outputs.data.thumbnail-url }}
+            primary-image-url: ${{ steps.get-repo-metadata.outputs.data.primary-image-url }}
+            markdown-file-url: ${{ steps.get-repo-metadata.outputs.data.markdown-file-url }}
+
       - name: Get control data
         id: get-control-data
         run: |

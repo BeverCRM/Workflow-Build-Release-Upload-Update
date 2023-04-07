@@ -477,13 +477,6 @@ jobs:
           echo "primary-image-url=$primaryImageUrl" >> $GITHUB_OUTPUT
           echo "markdown-file-url=$markdownFileUrl" >> $GITHUB_OUTPUT
 
-      - name: Display Value (GitHub URLs) # TODO: remove
-        run: |
-          echo "
-            thumbnail-url: ${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}
-            primary-image-url: ${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}
-            markdown-file-url: ${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}"
-
       - name: Display Value (tmp/update.sql) # TODO: remove
         run: |
           echo "

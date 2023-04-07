@@ -182,10 +182,10 @@ jobs:
 
       - name: Display Value (get-repo-metadata) # TODO: remove
         run: |
-          echo "data: ${{ fromJson(steps.get-repo-metadata.outputs.result) }}"
-          echo "thumbnail_url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}"
-          echo "primary_image_url: ${{ fromJson(steps.get-repo-metadata.outputs.result.primary_image_url) }}"
-          echo "markdown_file_url: ${{ fromJson(steps.get-repo-metadata.outputs.result.markdown_file_url) }}"
+          echo "data: ${{ steps.get-repo-metadata.outputs.result }}"
+          echo "thumbnail_url: ${{ steps.get-repo-metadata.outputs.result.thumbnail_url }}"
+          echo "primary_image_url: ${{ steps.get-repo-metadata.outputs.result.primary_image_url }}"
+          echo "markdown_file_url: ${{ steps.get-repo-metadata.outputs.result.markdown_file_url }}"
 
       - name: Get control data
         id: get-control-data

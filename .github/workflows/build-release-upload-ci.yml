@@ -109,22 +109,29 @@ jobs:
         run: |
           releaseSolutionPackageTypes="none unmanaged managed both"
           azureSolutionPackageTypes="unmanaged managed both"
+          urlRegex="^(?:https?|file|ftp):\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$"
           
           ok=true
           message=""
 
-          if [[ $( echo ${{ inputs.solution-folder }} ) == "" ]]
-            then
+          if [[ $( echo ${{ inputs.solution-folder }} ) == "" ]]; then
               ok=false
               message="The parameter 'solution-folder' can not be blank."
-          elif [[ !($releaseSolutionPackageTypes =~ (" "|^)"${{ inputs.release-solution-package-type }}"(" "|$)) ]]
-            then
+          elif [[ !($releaseSolutionPackageTypes =~ (" "|^)"${{ inputs.release-solution-package-type }}"(" "|$)) ]]; then
               ok=false
               message="'${{ inputs.release-solution-package-type }}' is not a valid value for 'release-solution-package-type' parameter."
-          elif [[ !($azureSolutionPackageTypes =~ (" "|^)"${{ inputs.azure-solution-package-type }}"(" "|$)) ]]
-            then
+          elif [[ !($azureSolutionPackageTypes =~ (" "|^)"${{ inputs.azure-solution-package-type }}"(" "|$)) ]]; then
               ok=false
               message="'${{ inputs.azure-solution-package-type }}' is not a valid value for 'azure-solution-package-type' parameter."
+          elif [[ ${{ inputs.control-thumbnail-url }} =~ $urlRegex ]]; then
+              ok=false
+              message="'${{ inputs.control-thumbnail-url }}' is not a valid value for 'control-thumbnail-url' parameter."
+          elif [[ ${{ inputs.control-primary-image-url }} =~ $urlRegex ]]; then
+              ok=false
+              message="'${{ inputs.control-primary-image-url }}' is not a valid value for 'control-primary-image-url' parameter."
+            elif [[ ${{ inputs.control-markdown-file-url }} =~ $urlRegex ]]; then
+              ok=false
+              message="'${{ inputs.control-markdown-file-url }}' is not a valid value for 'control-markdown-file-url' parameter."
           fi
 
           echo "ok=$ok" >> $GITHUB_OUTPUT
@@ -170,10 +177,6 @@ jobs:
             data['markdown-file-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`;
 
             return data;
-
-      - name: Displauy Value (metadata)
-        run: |
-          echo "${{ steps.get-repo-metadata.outputs.data }}"
 
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data
@@ -422,11 +425,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Display Value (tmp/check.sql 1)
+      - name: Display Value (tmp/check.sql 1) # TODO: remove
         run: |
           echo "SELECT pcf_control_id FROM pcf_control WHERE name = '${{ inputs.control-title }}'"
 
-      - name: Display Value (tmp/check.sql 2)
+      - name: Display Value (tmp/check.sql 2) # TODO: remove
         run: |
           echo "
             SELECT CASE WHEN EXISTS(
@@ -439,14 +442,30 @@ jobs:
       - name: Get GitHub dynamic URLs from Marketplace/Assets
         id: get-github-dynamic-urls
         run: |
-          tumbnailUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}"; else echo "${{ inputs.control-thumbnail-url }}"; fi)"
-          primaryImageUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-primary-image-url }}"; else echo "${{ inputs.control-primary-image-url }}"; fi)"
-          markdownFileUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}"; else echo "${{ inputs.control-markdown-file-url }}"; fi)"
+          tumbnailUrl="$(
+            if [[ "${{ inputs.use-default }}" == "true" ]]; then
+              echo "${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}";
+            else
+              echo "${{ inputs.control-thumbnail-url }}";
+            fi)"
+          primaryImageUrl="$(
+            if [[ "${{ inputs.use-default }}" == "true" ]]; then
+              echo "${{ needs.solution-configuration.outputs.default-control-primary-image-url }}";
+            else
+              echo "${{ inputs.control-primary-image-url }}";
+            fi)"
+          markdownFileUrl="$(
+            if [[ "${{ inputs.use-default }}" == "true" ]]; then
+              echo "${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}";
+            else
+              echo "${{ inputs.control-markdown-file-url }}";
+            fi)"
+
           echo "thumbnail-url=$tumbnailUrl" >> $GITHUB_OUTPUT
           echo "primary-image-url=$primaryImageUrl" >> $GITHUB_OUTPUT
           echo "markdown-file-url=$markdownFileUrl" >> $GITHUB_OUTPUT
 
-      - name: Display Value (tmp/update.sql)
+      - name: Display Value (tmp/update.sql) # TODO: remove
         run: |
           echo "
             UPDATE pcf_control
@@ -463,7 +482,7 @@ jobs:
               tags = '${{ needs.solution-configuration.outputs.control-tags }}'
             WHERE pcf_control_id IN(SELECT TOP 1 pcf_control_id FROM pcf_control WHERE name = '${{ inputs.control-title }}')"
 
-      - name: Display Value (tmp/create.sql)
+      - name: Display Value (tmp/create.sql) # TODO: remove
         run: |
           echo "
             INSERT INTO pcf_control (name, description, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, github_repo_url, blob_url, version, tags)

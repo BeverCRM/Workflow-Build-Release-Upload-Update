@@ -453,20 +453,24 @@ jobs:
       - name: Get GitHub dynamic URLs from Marketplace/Assets
         id: get-github-dynamic-urls
         run: |
+        if [[ $( echo "${{ inputs.solution-folder }}" ) == "" ]]; then
+              ok=false
+              message="The parameter 'solution-folder' can not be blank."
+
           tumbnailUrl="$(
-            if [[ '${{ inputs.use-default }}' == 'true' ]]; then
+            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
               echo '${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}';
             else
               echo '${{ inputs.control-thumbnail-url }}';
             fi)"
           primaryImageUrl="$(
-            if [[ '${{ inputs.use-default }}' == 'true' ]]; then
+            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
               echo '${{ needs.solution-configuration.outputs.default-control-primary-image-url }}';
             else
               echo '${{ inputs.control-primary-image-url }}';
             fi)"
           markdownFileUrl="$(
-            if [[ '${{ inputs.use-default }}' == 'true' ]]; then
+            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
               echo '${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}';
             else
               echo '${{ inputs.control-markdown-file-url }}';

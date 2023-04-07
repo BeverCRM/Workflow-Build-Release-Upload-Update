@@ -167,7 +167,7 @@ jobs:
       - name: Get control data
         id: get-control-data
         run: |
-          "control-tags='Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if (${{ inputs.control-tags }}) { ", ${{ inputs.control-tags }}" } )'" >> $env:GITHUB_OUTPUT
+          "control-tags='Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ('${{ inputs.control-tags }}') { ", ${{ inputs.control-tags }}" } )'" >> $env:GITHUB_OUTPUT
 
       - name: Get repository metadata
         id: get-repo-metadata
@@ -419,7 +419,7 @@ jobs:
     needs:
       - solution-configuration
       - upload-to-azure-storage
-    if: ${{ always() }} # TODO: remove
+    if: ${{ always() && needs.solution-configuration.conclusion == 'success' }} # TODO: remove
     runs-on: ubuntu-latest
 
     env:

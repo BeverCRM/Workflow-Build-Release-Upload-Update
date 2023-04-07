@@ -438,13 +438,13 @@ jobs:
 
       - name: Display Value (tmp/check.sql 1) # TODO: remove
         run: |
-          echo "SELECT ${{ env.db-name }}_id FROM ${{ env.db-name }} WHERE name = '${{ inputs.control-title }}'"
+          echo "SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }} WHERE name = '${{ inputs.control-title }}'"
 
       - name: Display Value (tmp/check.sql 2) # TODO: remove
         run: |
           echo "
             SELECT CASE WHEN EXISTS(
-              SELECT ${{ env.db-name }}_id FROM ${{ env.db-name }}
+              SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
               WHERE name = '${{ inputs.control-title }}')
                 THEN 'true'
                 ELSE 'false'
@@ -486,7 +486,7 @@ jobs:
       - name: Display Value (tmp/update.sql) # TODO: remove
         run: |
           echo "
-            UPDATE ${{ env.db-name }}
+            UPDATE ${{ env.db-table-name }}
             SET
               name = '${{ inputs.control-title }}',
               youtube_url = '${{ inputs.control-youtube-video-url }}',
@@ -498,12 +498,12 @@ jobs:
               blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
               version = 'v${{ needs.solution-configuration.outputs.solution-version }}',
               tags = '${{ needs.solution-configuration.outputs.control-tags }}'
-            WHERE ${{ env.db-name }}_id IN(SELECT TOP 1 ${{ env.db-name }}_id FROM ${{ env.db-name }} WHERE name = '${{ inputs.control-title }}')"
+            WHERE ${{ env.db-table-name }}_id IN(SELECT TOP 1 ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }} WHERE name = '${{ inputs.control-title }}')"
 
       - name: Display Value (tmp/create.sql) # TODO: remove
         run: |
           echo "
-            INSERT INTO ${{ env.db-name }} (name, description, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, github_repo_url, blob_url, version, tags)
+            INSERT INTO ${{ env.db-table-name }} (name, description, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, github_repo_url, blob_url, version, tags)
             VALUES (
               '${{ inputs.control-title }}',
               '${{ needs.solution-configuration.ouputs.control-description }}',

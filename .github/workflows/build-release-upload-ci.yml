@@ -185,7 +185,7 @@ jobs:
         run: |
           "control-tags='Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ('${{ inputs.control-tags }}' -ne '') { ", ${{ inputs.control-tags }}" } )'" >> $env:GITHUB_OUTPUT
           "control-description='$(
-            if ('${{ inputs.use-default }}' -eq 'true') { "${{ steps.get-repo-metadata.outputs.data.description }}" }
+            if ('${{ inputs.use-default }}' -eq 'true') { "${{ fromJson(steps.get-repo-metadata.outputs.result).description }}" }
             else { "${{ inputs.control-tags }}" }
           )'" >> $env:GITHUB_OUTPU
 

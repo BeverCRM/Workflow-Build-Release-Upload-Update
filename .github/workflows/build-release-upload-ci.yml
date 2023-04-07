@@ -124,13 +124,13 @@ jobs:
           elif [[ !($azureSolutionPackageTypes =~ (" "|^)"${{ inputs.azure-solution-package-type }}"(" "|$)) ]]; then
               ok=false
               message="'${{ inputs.azure-solution-package-type }}' is not a valid value for 'azure-solution-package-type' parameter."
-          elif [[ ${{ inputs.control-thumbnail-url }} =~ $urlRegex ]]; then
+          elif [[ '${{ inputs.control-thumbnail-url }}' =~ $urlRegex ]]; then
               ok=false
               message="'${{ inputs.control-thumbnail-url }}' is not a valid value for 'control-thumbnail-url' parameter."
-          elif [[ ${{ inputs.control-primary-image-url }} =~ $urlRegex ]]; then
+          elif [[ '${{ inputs.control-primary-image-url }}' =~ $urlRegex ]]; then
               ok=false
               message="'${{ inputs.control-primary-image-url }}' is not a valid value for 'control-primary-image-url' parameter."
-            elif [[ ${{ inputs.control-markdown-file-url }} =~ $urlRegex ]]; then
+            elif [[ '${{ inputs.control-markdown-file-url }}' =~ $urlRegex ]]; then
               ok=false
               message="'${{ inputs.control-markdown-file-url }}' is not a valid value for 'control-markdown-file-url' parameter."
           fi

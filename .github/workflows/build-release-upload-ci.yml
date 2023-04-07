@@ -146,11 +146,11 @@ jobs:
       solution-version: ${{ steps.get-solution-data.outputs.version }}
       solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
       solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
-      default-control-description: ${{ steps.get-repo-metadata.outputs.repo-description }}
-      default-control-thumbnail-url: ${{ steps.get-repo-metadata.outputs.thumbnail-url }}
-      default-control-primary-image-url: ${{ steps.get-repo-metadata.outputs.primary-image-url }}
-      default-control-markdown-file-url: ${{ steps.get-repo-metadata.outputs.markdown-file-url }}
-      repo-url: ${{ steps.get-repo-metadata.outputs.repo-url }}
+      default-control-description: ${{ steps.get-repo-metadata.outputs.data.description }}
+      default-control-thumbnail-url: ${{ steps.get-repo-metadata.outputs.data.thumbnail-url }}
+      default-control-primary-image-url: ${{ steps.get-repo-metadata.outputs.data.primary-image-url }}
+      default-control-markdown-file-url: ${{ steps.get-repo-metadata.outputs.data.markdown-file-url }}
+      repo-url: ${{ steps.get-repo-metadata.outputs.data.html_url }}
       control-tags: 'Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if (${{ inputs.control-tags }}) { ", ${{ inputs.control-tags }}" } )'
 
     steps:
@@ -165,13 +165,12 @@ jobs:
           script: |
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
+
+            data['thumbnail-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/thumbnail.png`;
+            data['primary-image-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/primary.png`;
+            data['markdown-file-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`;
+
             return data;
-          outputs:
-            repo-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}'
-            repo-description: '${{ steps.get-repo-metadata.outputs.data.description }}'
-            thumbnail-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/MarketplaceAssets/images/thumbnail.png'
-            primary-image-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/MarketplaceAssets/images/primary.png'
-            markdown-file-url: '${{ steps.get-repo-metadata.outputs.data.html_url }}/blob/${{ env.GITHUB_REF }}/README.md'
 
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data

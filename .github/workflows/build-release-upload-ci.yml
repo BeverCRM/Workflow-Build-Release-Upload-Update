@@ -154,9 +154,9 @@ jobs:
       solution-version: ${{ steps.get-solution-data.outputs.version }}
       solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
       solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
-      default-control-thumbnail-url: ${{ steps.get-repo-metadata.outputs.result.thumbnail-url }}
-      default-control-primary-image-url: ${{ steps.get-repo-metadata.outputs.result.primary-image-url }}
-      default-control-markdown-file-url: ${{ steps.get-repo-metadata.outputs.result.markdown-file-url }}
+      default-control-thumbnail-url: ${{ steps.get-repo-metadata.outputs.result.thumbnail_url }}
+      default-control-primary-image-url: ${{ steps.get-repo-metadata.outputs.result.primary_image_url }}
+      default-control-markdown-file-url: ${{ steps.get-repo-metadata.outputs.result.markdown_file_url }}
       repo-url: ${{ steps.get-repo-metadata.outputs.result.html_url }}
       control-description: ${{ steps.get-control-data.outputs.control-description }}
       control-tags: ${{ steps.get-control-data.outputs.control-tags }}
@@ -173,9 +173,9 @@ jobs:
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
 
-            data['thumbnail-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/thumbnail.png`;
-            data['primary-image-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/primary.png`;
-            data['markdown-file-url'] = `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`;
+            data.thumbnail_url = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/thumbnail.png`;
+            data.primary_image_url = `${data.html_url}/blob/${process.env.GITHUB_REF}/MarketplaceAssets/images/primary.png`;
+            data.markdown_file_url = `${data.html_url}/blob/${process.env.GITHUB_REF}/README.md`;
 
             return data;
 
@@ -184,9 +184,9 @@ jobs:
           echo "
             data: ${{ steps.get-repo-metadata.outputs.result }}
             repo-url: ${{ steps.get-repo-metadata.outputs.result.html_url }}
-            thumbnail-url: ${{ steps.get-repo-metadata.outputs.result.thumbnail-url }}
-            primary-image-url: ${{ steps.get-repo-metadata.outputs.result.primary-image-url }}
-            markdown-file-url: ${{ steps.get-repo-metadata.outputs.result.markdown-file-url }}"
+            thumbnail-url: ${{ steps.get-repo-metadata.outputs.result.thumbnail_url }}
+            primary-image-url: ${{ steps.get-repo-metadata.outputs.result.primary_image_url }}
+            markdown-file-url: ${{ steps.get-repo-metadata.outputs.result.markdown_file_url }}"
 
       - name: Get control data
         id: get-control-data

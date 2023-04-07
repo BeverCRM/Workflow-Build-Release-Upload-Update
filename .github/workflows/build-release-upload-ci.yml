@@ -161,7 +161,6 @@ jobs:
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          # result-encoding: string
           script: |
             const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
             const { data } = await github.rest.repos.get({ owner, repo });
@@ -277,7 +276,7 @@ jobs:
 
   build:
     needs: solution-configuration
-    if: ${{ false }}
+    if: ${{ false }} # TODO: remove
     runs-on: windows-latest
 
     steps:
@@ -322,7 +321,7 @@ jobs:
     needs:
       - solution-configuration
       - build
-    if: ${{ false }}
+    if: ${{ false }} # TODO: remove
     runs-on: ubuntu-latest
 
     steps:
@@ -334,18 +333,6 @@ jobs:
         with:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: tmp/solution/
-
-      # - name: Check if directory already exists
-      #   id: check-if-directory-already-exists
-      #   run: |
-      #     result=$( az storage blob exists \
-      #     --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
-      #     --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-      #     --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-      #     --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-      #     --output "tsv" )
-
-      #     echo "result=$result" >> $GITHUB_OUTPUT
 
       - name: Check if directory already exists
         id: check-if-directory-already-exists
@@ -376,20 +363,6 @@ jobs:
             --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
-
-      # - name: Upload `README.md` of the solution new version to Azure storage.
-      #   id: upload-solution-new-version-readme-file-to-azure-storage
-      #   if: ${{ inputs.azure-solution-package-type != 'both' }}
-      #   uses: Azure/cli@v1
-      #   with:
-      #     inlineScript: |
-      #       az storage blob upload \
-      #       --file "github-action/solution/README.md" \
-      #       --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-      #       --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-      #       --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-      #       --content-type text/markdown \
-      #       --overwrite true
 
       - name: Upload solution new version files (unmanaged & managed) to Azure storage
         id: upload-solution-new-version-files-to-azure-storage
@@ -437,7 +410,7 @@ jobs:
     needs:
       - solution-configuration
       - upload-to-azure-storage
-    if: ${{ always() }}
+    if: ${{ always() }} # TODO: remove
     runs-on: ubuntu-latest
 
     env:
@@ -448,10 +421,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      # - name: Check if the control already exists in DB
-      # - name: Update if exists
-      # - name: Create a new raw if doesn't exist
 
       - name: Display Value (tmp/check.sql 1)
         run: |
@@ -482,15 +451,15 @@ jobs:
           echo "
             UPDATE pcf_control
             SET
-              name = '${{ inputs.control-title }}'
-              description = '${{ inputs.control-description }}'
-              youtube_url = '${{ inputs.control-youtube-video-url }}'
-              thumbnail_url = '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}'
-              primary-image-url = '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}'
-              markdown_file_url = '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}'
-              github_repo_url = '${{ needs.solution-configuration.outputs.repo-url }}'
-              blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
-              version = 'v${{ needs.solution-configuration.outputs.solution-version }}'
+              name = '${{ inputs.control-title }}',
+              description = '${{ inputs.control-description }}',
+              youtube_url = '${{ inputs.control-youtube-video-url }}',
+              thumbnail_url = '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
+              primary-image-url = '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+              markdown_file_url = '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+              github_repo_url = '${{ needs.solution-configuration.outputs.repo-url }}',
+              blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+              version = 'v${{ needs.solution-configuration.outputs.solution-version }}',
               tags = '${{ needs.solution-configuration.outputs.control-tags }}'
             WHERE pcf_control_id IN(SELECT TOP 1 pcf_control_id FROM pcf_control WHERE name = '${{ inputs.control-title }}')"
 

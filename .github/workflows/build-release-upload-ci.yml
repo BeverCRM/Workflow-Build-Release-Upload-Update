@@ -190,7 +190,7 @@ jobs:
             repo-url: ${{ steps.get-repo-metadata.outputs.data.html_url }}
             thumbnail-url: ${{ steps.get-repo-metadata.outputs.thumbnail-url }}
             primary-image-url: ${{ steps.get-repo-metadata.outputs.primary-image-url }}
-            markdown-file-url: ${{ steps.get-repo-metadata.outputs.markdown-file-url }}
+            markdown-file-url: ${{ steps.get-repo-metadata.outputs.markdown-file-url }}"
 
       - name: Get control data
         id: get-control-data

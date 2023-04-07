@@ -180,15 +180,6 @@ jobs:
 
             return data;
 
-      - name: Get control data
-        id: get-control-data
-        run: |
-          "control-tags='Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ('${{ inputs.control-tags }}' -ne '') { ", ${{ inputs.control-tags }}" } )'" >> $env:GITHUB_OUTPUT
-          "control-description='$(
-            if ('${{ inputs.use-default }}' -eq 'true') { "${{ fromJson(steps.get-repo-metadata.outputs.result).description }}" }
-            else { "${{ inputs.control-tags }}" }
-          )'" >> $env:GITHUB_OUTPU
-
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data
         run: |
@@ -198,6 +189,15 @@ jobs:
           "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
           "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
           "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
+
+      - name: Get control data
+        id: get-control-data
+        run: |
+          "control-tags='Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ('${{ inputs.control-tags }}' -ne '') { ", ${{ inputs.control-tags }}" } )'" >> $env:GITHUB_OUTPUT
+          "control-description='$(
+            if ('${{ inputs.use-default }}' -eq 'true') { "${{ fromJson(steps.get-repo-metadata.outputs.result).description }}" }
+            else { "${{ inputs.control-tags }}" }
+          )'" >> $env:GITHUB_OUTPU
 
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj

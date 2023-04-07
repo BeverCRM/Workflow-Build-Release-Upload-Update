@@ -157,7 +157,7 @@ jobs:
       default-control-thumbnail-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}
       default-control-primary-image-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_image_url }}
       default-control-markdown-file-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}
-      repo-url: ${{ steps.get-repo-metadata.outputs.result.html_url }}
+      repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
       control-description: ${{ steps.get-control-data.outputs.control-description }}
       control-tags: ${{ steps.get-control-data.outputs.control-tags }}
 
@@ -179,12 +179,6 @@ jobs:
             data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
 
             return data;
-
-      # - name: Display Value (get-repo-metadata) # TODO: remove
-      #   run: |
-      #     echo "thumbnail_url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}"
-      #     echo "primary_image_url: ${{ fromJson(steps.get-repo-metadata.outputs.result.primary_image_url) }}"
-      #     echo "markdown_file_url: ${{ fromJson(steps.get-repo-metadata.outputs.result.markdown_file_url) }}"
 
       - name: Get control data
         id: get-control-data

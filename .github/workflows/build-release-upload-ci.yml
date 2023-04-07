@@ -451,13 +451,6 @@ jobs:
                 ELSE 'false'
               END AS exists"
 
-      - name: Display Value (solution-configuration) # TODO: remove
-        run: |
-          echo "
-            thumbnail-url: ${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}
-            primary-image-url: ${{ needs.solution-configuration.outputs.default-control-primary-image-url }}
-            markdown-file-url: ${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}"
-
       - name: Get GitHub dynamic URLs from Marketplace/Assets
         id: get-github-dynamic-urls
         run: |

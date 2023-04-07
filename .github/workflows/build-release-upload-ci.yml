@@ -182,6 +182,7 @@ jobs:
       - name: Display Value (get-repo-metadata) # TODO: remove
         run: |
           echo "
+            data: ${{ steps.get-repo-metadata.outputs.result }}
             repo-url: ${{ steps.get-repo-metadata.outputs.result.html_url }}
             thumbnail-url: ${{ steps.get-repo-metadata.outputs.result.thumbnail-url }}
             primary-image-url: ${{ steps.get-repo-metadata.outputs.result.primary-image-url }}

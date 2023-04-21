@@ -482,10 +482,9 @@ jobs:
           echo -n "
             MERGE INTO ${{ env.db-table-name }} AS target
             USING (SELECT '${{ inputs.control-title }}') AS source (name)
-            ON target.name = '${{ inputs.control-title }}'
+            ON target.name = source.name
             WHEN MATCHED THEN
-              UPDATE ${{ env.db-table-name }}
-              SET
+              UPDATE SET
                 name = '${{ inputs.control-title }}',
                 youtube_url = '${{ inputs.control-youtube-video-url }}',
                 thumbnail_url = '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',

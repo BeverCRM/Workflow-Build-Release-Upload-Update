@@ -476,126 +476,53 @@ jobs:
           echo "primary-img-url=$primaryImgUrl" >> $GITHUB_OUTPUT
           echo "markdown-file-url=$markdownFileUrl" >> $GITHUB_OUTPUT
 
-      # '${{ inputs.control-title }}'
-      - name: Generate SQL script to check if a row already exists in `${{ env.db-table-name }}` table in Azure SQL DB or not (tmp/check.sql)
+      - name: Generate SQL script to create/update a row of `${{ env.db-table-name }}` table in Azure SQL DB depending on whether the row already exists or not (tmp/db.sql)
         run: |
           mkdir -p tmp
           echo -n "
-            SELECT CASE WHEN EXISTS(
-              SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
-              WHERE name = 'Fetch to Subgrid')
-                THEN 'true'
-                ELSE 'false'
-              END AS exists" >> tmp/check.sql
+            MERGE INTO ${{ env.db-table-name }} AS target
+            USING (SELECT '${{ inputs.control-title }}') AS source (name)
+            ON target.name = '${{ inputs.control-title }}'
+            WHEN MATCHED THEN
+              UPDATE ${{ env.db-table-name }}
+              SET
+                name = '${{ inputs.control-title }}',
+                youtube_url = '${{ inputs.control-youtube-video-url }}',
+                thumbnail_url = '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
+                primary_img_url = '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
+                markdown_file_url = '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+                description = '${{ needs.solution-configuration.ouputs.control-description }}',
+                github_repo_url = '${{ needs.solution-configuration.outputs.repo-url }}',
+                blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+                version = 'v${{ needs.solution-configuration.outputs.solution-version }}',
+                tags = '${{ needs.solution-configuration.outputs.control-tags }}'
+            WHEN NOT MATCHED THEN
+              INSERT (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+              VALUES (
+                '${{ inputs.control-title }}',
+                '${{ inputs.control-youtube-video-url }}',
+                '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
+                '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+                '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+                '${{ needs.solution-configuration.ouputs.control-description }}',
+                '${{ needs.solution-configuration.outputs.repo-url }}',
+                '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+                'v${{ needs.solution-configuration.outputs.solution-version }}',
+                '${{ needs.solution-configuration.outputs.control-tags }}'
+              )" >> tmp/db.sql
 
       - name: Execute the SQL script `tmp/check.sql`
-        id: execute-check-sql
+        id: execute-sql
         uses: azure/sql-action@v2.1
         with:
           connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
-          path: tmp/check.sql
+          path: tmp/db.sql
 
       - name: Debug # TODO: remove
         run: |
-          echo "${{ toJson(steps.execute-check-sql.outputs) }}"
-          echo "${{ toJson(steps.execute-create-sql.conclusion) }}"
-          echo "${{ toJson(steps.execute-create-sql.outcome) }}"
-
-      - name: Display Value (tmp/create.sql) # TODO: remove
-        run: |
-          echo "
-            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_img_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
-            VALUES (
-              '${{ inputs.control-title }}',
-              '${{ inputs.control-youtube-video-url }}',
-              '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-              '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
-              '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
-              '${{ needs.solution-configuration.ouputs.control-description }}',
-              '${{ needs.solution-configuration.outputs.repo-url }}',
-              '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
-              'v${{ needs.solution-configuration.outputs.solution-version }}',
-              '${{ needs.solution-configuration.outputs.control-tags }}'
-            )"      
-
-      - name: Generate SQL script to create a new row of `${{ env.db-table-name }}` in Azure SQL DB (tmp/create.sql)
-        run: |
-          mkdir -p tmp
-          echo -n "
-            INSERT INTO ${{ env.db-table-name }}a (name, youtube_url, thumbnail_url, primary_img_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
-            VALUES (
-              '${{ inputs.control-title }}',
-              '${{ inputs.control-youtube-video-url }}',
-              '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-              '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
-              '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
-              '${{ needs.solution-configuration.ouputs.control-description }}',
-              '${{ needs.solution-configuration.outputs.repo-url }}',
-              '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
-              'v${{ needs.solution-configuration.outputs.solution-version }}',
-              '${{ needs.solution-configuration.outputs.control-tags }}'
-            )" >> tmp/create.sql
-
-      - name: Execute the SQL script `tmp/create.sql`
-        id: execute-create-sql
-        uses: azure/sql-action@v2.1
-        with:
-          connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
-          path: tmp/create.sql
-
-      - name: Debug # TODO: remove
-        run: |
-          echo "${{ toJson(steps.execute-create-sql.outputs) }}"
-          echo "${{ toJson(steps.execute-create-sql.conclusion) }}"
-          echo "${{ toJson(steps.execute-create-sql.outcome) }}"
-
-      - name: Display Value (tmp/update.sql) # TODO: remove
-        run: |
-          echo "
-            UPDATE ${{ env.db-table-name }}
-            SET
-              name = '${{ inputs.control-title }}',
-              youtube_url = '${{ inputs.control-youtube-video-url }}',
-              thumbnail_url = '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-              primary_img_url = '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
-              markdown_file_url = '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
-              description = '${{ needs.solution-configuration.ouputs.control-description }}',
-              github_repo_url = '${{ needs.solution-configuration.outputs.repo-url }}',
-              blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
-              version = 'v${{ needs.solution-configuration.outputs.solution-version }}',
-              tags = '${{ needs.solution-configuration.outputs.control-tags }}'
-            WHERE ${{ env.db-table-name }}_id IN(
-              SELECT TOP 1 ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
-              WHERE name = '${{ inputs.control-title }}'
-            )"      
-
-      - name: Generate SQL script to updatet the row of `${{ env.db-table-name }}` in Azure SQL DB (tmp/update.sql)
-        run: |
-          mkdir -p tmp
-          echo -n "
-            UPDATE ${{ env.db-table-name }}
-            SET
-              name = '${{ inputs.control-title }}',
-              youtube_url = '${{ inputs.control-youtube-video-url }}',
-              thumbnail_url = '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-              primary_img_url = '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
-              markdown_file_url = '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
-              description = '${{ needs.solution-configuration.ouputs.control-description }}',
-              github_repo_url = '${{ needs.solution-configuration.outputs.repo-url }}',
-              blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
-              version = 'v${{ needs.solution-configuration.outputs.solution-version }}',
-              tags = '${{ needs.solution-configuration.outputs.control-tags }}'
-            WHERE ${{ env.db-table-name }}_id IN(
-              SELECT TOP 1 ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
-              WHERE name = '${{ inputs.control-title }}'
-            )" >> tmp/update.sql
-
-      # - name: Execute the SQL script `tmp/update.sql`
-      #   id: execute-update-sql
-      #   uses: azure/sql-action@v2.1
-      #   with:
-      #     connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
-      #     path: tmp/update.sql
+          echo "${{ toJson(steps.execute-sql.outputs) }}"
+          echo "${{ toJson(steps.execute-sql.conclusion) }}"
+          echo "${{ toJson(steps.execute-sql.outcome) }}"
 
   create-release: 
     needs:

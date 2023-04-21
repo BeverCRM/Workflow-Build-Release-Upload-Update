@@ -541,29 +541,29 @@ jobs:
               '${{ needs.solution-configuration.outputs.control-tags }}'
             )" >> ./insert.sql
 
-      - name: Execute SQL script to insert record
-        uses: microsoft/mssql-cli@v1
-        with:
-          server: ${{ env.db-server-name }}
-          database: ${{ env.db-name }}
-          username: ${{ env.db-username }}
-          password: ${{ env.db-password }}
-          file: ./insert.sql
-
-      # - name: Create a new raw of pcf_control table in Azure SQL DB
-      #   uses: azure/sql-action@v2.1
+      # - name: Execute SQL script to insert record
+      #   uses: microsoft/mssql-cli@v1
       #   with:
-      #     # required, connection string incl the database and user authentication information
-      #     connection-string:
-      #     # required, path to either a .sql, .dacpac, or .sqlproj file
-      #     path:
-      #     # optional when using a .sql script, required otherwise
-      #     # sqlpackage action on the .dacpac or .sqlproj file, supported options are: Publish, Script, DeployReport, DriftReport
-      #     action:
-      #     # optional additional sqlpackage or go-sqlcmd arguments
-      #     arguments:
-      #     # optional additional dotnet build options when building a database project file
-      #     build-arguments:
+      #     server: ${{ env.db-server-name }}
+      #     database: ${{ env.db-name }}
+      #     username: ${{ env.db-username }}
+      #     password: ${{ env.db-password }}
+      #     file: ./insert.sql
+
+      - name: Create a new raw of pcf_control table in Azure SQL DB
+        uses: azure/sql-action@v2.1
+        with:
+          # required, connection string incl the database and user authentication information
+          connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+          # required, path to either a .sql, .dacpac, or .sqlproj file
+          path: ./insert.sql
+          # optional when using a .sql script, required otherwise
+          # sqlpackage action on the .dacpac or .sqlproj file, supported options are: Publish, Script, DeployReport, DriftReport
+          # action:
+          # optional additional sqlpackage or go-sqlcmd arguments
+          # arguments:
+          # optional additional dotnet build options when building a database project file
+          # build-arguments:
 
   create-release: 
     needs:

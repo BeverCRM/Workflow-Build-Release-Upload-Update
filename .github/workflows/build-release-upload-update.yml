@@ -167,38 +167,31 @@ jobs:
       solution-version: ${{ steps.get-solution-data.outputs.version }}
       solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
       solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
-      default-control-thumbnail-url: ${{ steps.get-repo-metadata.outputs.thumbnail-url }}
-      default-control-primary-img-url: ${{ steps.get-repo-metadata.outputs.primary-img-url }}
-      default-control-markdown-file-url: ${{ steps.get-repo-metadata.outputs.markdown-file-url }}
-      repo-url: ${{ github.repository }}
+      default-control-thumbnail-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}
+      default-control-primary-img-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_img_url }}
+      default-control-markdown-file-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}
+      repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
       control-description: ${{ steps.get-control-data.outputs.control-description }}
       control-tags: ${{ steps.get-control-data.outputs.control-tags }}
 
     steps:
       - uses: actions/checkout@v3
 
-      # - name: Get repository metadata
-      #   id: get-repo-metadata
-      #   uses: actions/github-script@v6
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
-      #       const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-      #       const { data } = await github.rest.repos.get({ owner, repo });
-
-      #       data.thumbnail_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/thumbnail.png`;
-      #       data.primary_img_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
-      #       data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
-
-      #       return data;
-
       - name: Get repository metadata
         id: get-repo-metadata
-        run: |
-          "thumbnail-url='https://github.com/${{ github.repository }}/blob/${{ github.ref#refs/heads/ }}/MarketplaceAssets/images/thumbnail.png'" >> $env:GITHUB_OUTPUT
-          "primary-img-url='https://github.com/${{ github.repository }}/blob/${{ github.ref#refs/heads/ }}/MarketplaceAssets/images/primary.png'" >> $env:GITHUB_OUTPUT
-          "markdown-file-url='https://github.com/${{ github.repository }}/blob/${{ github.ref#refs/heads/ }}/README.md'" >> $env:GITHUB_OUTPUT
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+            const { data } = await github.rest.repos.get({ owner, repo });
+
+            data.thumbnail_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/thumbnail.png`;
+            data.primary_img_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
+            data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
+
+            return data;
 
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data
@@ -456,14 +449,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Display Value (solution-configuration) # TODO: remove
-        run: |
-          echo "github.repository: ${{ github.repository }}"
-          echo "default-control-thumbnail-url: ${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}"
-          echo "default-control-primary-img-url: ${{ needs.solution-configuration.outputs.default-control-primary-img-url }}"
-          echo "default-control-markdown-file-url: ${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}"
-          echo "solution-configuration.outputs.repo-url: ${{ needs.solution-configuration.outputs.repo-url }}"
 
       - name: Get GitHub dynamic URLs from Marketplace/Assets
         id: get-github-dynamic-urls

@@ -32,7 +32,7 @@ on:
       control-thumbnail-url: # TODO: changed
         description: Cotnrol thumbnail url (included in use-default)
         type: string
-      control-primary-image-url: # TODO: changed
+      control-primary-img-url: # TODO: changed
         description: Cotnrol primary image url (included in use-default)
         type: string
       control-youtube-video-url:
@@ -140,9 +140,9 @@ jobs:
           elif [[ "${{ inputs.control-thumbnail-url }}" =~ $urlRegex ]]; then
               ok=false
               message="'${{ inputs.control-thumbnail-url }}' is not a valid value for 'control-thumbnail-url' parameter."
-          elif [[ "${{ inputs.control-primary-image-url }}" =~ $urlRegex ]]; then
+          elif [[ "${{ inputs.control-primary-img-url }}" =~ $urlRegex ]]; then
               ok=false
-              message="'${{ inputs.control-primary-image-url }}' is not a valid value for 'control-primary-image-url' parameter."
+              message="'${{ inputs.control-primary-img-url }}' is not a valid value for 'control-primary-img-url' parameter."
             elif [[ "${{ inputs.control-markdown-file-url }}" =~ $urlRegex ]]; then
               ok=false
               message="'${{ inputs.control-markdown-file-url }}' is not a valid value for 'control-markdown-file-url' parameter."
@@ -168,7 +168,7 @@ jobs:
       solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
       solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
       default-control-thumbnail-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}
-      default-control-primary-image-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_image_url }}
+      default-control-primary-image-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_img_url }}
       default-control-markdown-file-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}
       repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
       control-description: ${{ steps.get-control-data.outputs.control-description }}
@@ -188,7 +188,7 @@ jobs:
             const { data } = await github.rest.repos.get({ owner, repo });
 
             data.thumbnail_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/thumbnail.png`;
-            data.primary_image_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
+            data.primary_img_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
             data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
 
             return data;
@@ -459,11 +459,11 @@ jobs:
             else
               echo '${{ inputs.control-thumbnail-url }}';
             fi)"
-          primaryImageUrl="$(
+          primaryImgUrl="$(
             if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
-              echo '${{ needs.solution-configuration.outputs.default-control-primary-image-url }}';
+              echo '${{ needs.solution-configuration.outputs.default-control-primary-img-url }}';
             else
-              echo '${{ inputs.control-primary-image-url }}';
+              echo '${{ inputs.control-primary-img-url }}';
             fi)"
           markdownFileUrl="$(
             if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
@@ -473,7 +473,7 @@ jobs:
             fi)"
 
           echo "thumbnail-url=$tumbnailUrl" >> $GITHUB_OUTPUT
-          echo "primary-image-url=$primaryImageUrl" >> $GITHUB_OUTPUT
+          echo "primary-img-url=$primaryImgUrl" >> $GITHUB_OUTPUT
           echo "markdown-file-url=$markdownFileUrl" >> $GITHUB_OUTPUT
 
       - name: Generate SQL script to check if a row already exists in `${{ env.db-table-name }}` table in Azure SQL DB or not (tmp/check.sql)
@@ -504,12 +504,12 @@ jobs:
       - name: Display Value (tmp/create.sql) # TODO: remove
         run: |
           echo "
-            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_img_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
             VALUES (
               '${{ inputs.control-title }}',
               '${{ inputs.control-youtube-video-url }}',
               '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-              '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
               '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
               '${{ needs.solution-configuration.ouputs.control-description }}',
               '${{ needs.solution-configuration.outputs.repo-url }}',
@@ -522,12 +522,12 @@ jobs:
         run: |
           mkdir -p tmp
           echo -n "
-            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_img_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
             VALUES (
               '${{ inputs.control-title }}',
               '${{ inputs.control-youtube-video-url }}',
               '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-              '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
               '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
               '${{ needs.solution-configuration.ouputs.control-description }}',
               '${{ needs.solution-configuration.outputs.repo-url }}',

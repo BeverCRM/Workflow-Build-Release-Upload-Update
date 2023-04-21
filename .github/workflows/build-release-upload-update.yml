@@ -496,10 +496,29 @@ jobs:
 
       - name: Display Value (tmp/check.sql) # TODO: remove
         run: |
+          echo "${{ toJson(steps.execute-check-sql.outputs) }}"
+          echo "outputs: ${{ steps.execute-check-sql.outputs }}"
           echo "result: ${{ steps.execute-check-sql.outputs.result }}"
           echo "resultset: ${{ steps.execute-check-sql.outputs.resultset }}"
 
-      - name: Generate SQL script to create a new row of `${{ env.db-table-name }}` in Azure SQL DB (tmp/insert.sql)
+      - name: Display Value (tmp/create.sql) # TODO: remove
+        run: |
+          echo "
+            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+            VALUES (
+              '${{ inputs.control-title }}',
+              '${{ inputs.control-youtube-video-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+              '${{ needs.solution-configuration.ouputs.control-description }}',
+              '${{ needs.solution-configuration.outputs.repo-url }}',
+              '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+              'v${{ needs.solution-configuration.outputs.solution-version }}',
+              '${{ needs.solution-configuration.outputs.control-tags }}'
+            )"      
+
+      - name: Generate SQL script to create a new row of `${{ env.db-table-name }}` in Azure SQL DB (tmp/create.sql)
         run: |
           mkdir -p tmp
           echo -n "
@@ -515,19 +534,19 @@ jobs:
               '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
               'v${{ needs.solution-configuration.outputs.solution-version }}',
               '${{ needs.solution-configuration.outputs.control-tags }}'
-            )" >> tmp/insert.sql
+            )" >> tmp/create.sql
 
-      - name: Execute the SQL script `tmp/insert.sql`
-        id: execute-insert-sql
+      - name: Execute the SQL script `tmp/create.sql`
+        id: execute-create-sql
         uses: azure/sql-action@v2.1
         with:
           connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
-          path: tmp/insert.sql
+          path: tmp/create.sql
 
-      - name: Display Value (tmp/insert.sql) # TODO: remove
+      - name: Display Value (tmp/create.sql) # TODO: remove
         run: |
-          echo "result: ${{ steps.execute-insert-sql.outputs.result }}"
-          echo "resultset: ${{ steps.execute-insert-sql.outputs.resultset }}"
+          echo "result: ${{ steps.execute-create-sql.outputs.result }}"
+          echo "resultset: ${{ steps.execute-create-sql.outputs.resultset }}"
 
   create-release: 
     needs:

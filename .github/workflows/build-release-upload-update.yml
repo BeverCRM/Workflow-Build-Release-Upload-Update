@@ -492,7 +492,14 @@ jobs:
         uses: azure/sql-action@v2.1
         with:
           connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
-          path: tmp/check.sql
+          query: |
+            SELECT CASE WHEN EXISTS(
+              SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
+              WHERE name = '${{ inputs.control-title }}')
+                THEN 'true'
+                ELSE 'false'
+              END AS 'exists'
+          # path: tmp/check.sql
 
       - name: Display Value (tmp/check.sql) # TODO: remove
         run: |

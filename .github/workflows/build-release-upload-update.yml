@@ -177,21 +177,28 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # - name: Get repository metadata
+      #   id: get-repo-metadata
+      #   uses: actions/github-script@v6
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
+      #       const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+      #       const { data } = await github.rest.repos.get({ owner, repo });
+
+      #       data.thumbnail_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/thumbnail.png`;
+      #       data.primary_img_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
+      #       data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
+
+      #       return data;
+
       - name: Get repository metadata
         id: get-repo-metadata
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
-            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
-            const { data } = await github.rest.repos.get({ owner, repo });
-
-            data.thumbnail_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/thumbnail.png`;
-            data.primary_img_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
-            data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
-
-            return data;
+        run: |
+          "thumbnail-url='${{ github.repository }}/blob/${{ github.ref_escaped }}/MarketplaceAssets/images/thumbnail.png'" >> $env:GITHUB_OUTPUT
+          "primary-img-url='${{ github.repository }}/blob/${{ github.ref_escaped }}/MarketplaceAssets/images/primary.png'" >> $env:GITHUB_OUTPUT
+          "markdown-file-url='${{ github.repository }}/blob/${{ github.ref_escaped }}/README.md'" >> $env:GITHUB_OUTPUT
 
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data

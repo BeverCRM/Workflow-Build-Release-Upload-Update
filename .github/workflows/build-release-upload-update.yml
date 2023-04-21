@@ -508,7 +508,7 @@ jobs:
                 '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
                 'v${{ needs.solution-configuration.outputs.solution-version }}',
                 '${{ needs.solution-configuration.outputs.control-tags }}'
-              )" >> tmp/db.sql
+              );" >> tmp/db.sql
 
       - name: Execute the SQL script `tmp/check.sql`
         id: execute-sql

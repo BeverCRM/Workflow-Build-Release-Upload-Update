@@ -497,9 +497,7 @@ jobs:
       - name: Display Value (tmp/check.sql) # TODO: remove
         run: |
           echo "${{ toJson(steps.execute-check-sql.outputs) }}"
-          echo "outputs: ${{ steps.execute-check-sql.outputs }}"
-          echo "result: ${{ steps.execute-check-sql.outputs.result }}"
-          echo "resultset: ${{ steps.execute-check-sql.outputs.resultset }}"
+          echo "exists: ${{ steps.execute-check-sql.outputs.exists }}"
 
       - name: Display Value (tmp/create.sql) # TODO: remove
         run: |

@@ -358,8 +358,8 @@ jobs:
       - name: Check if directory already exists
         id: check-if-directory-already-exists
         run: |
-          result=$( az storage blob exists \
-          --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+          result=$( az storage blob directory exists \
+          --directory-path "${{ needs.solution-configuration.outputs.solution-unique-name }}" |
           --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
           --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
           --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \

@@ -1,11 +1,7 @@
 name: Build the project & Create a new release & Upload the solution to Azure Blob Storage & Update the Azure SQL Database
 
-# TODO: check if npm run build can be removed
-# TODO: make configurations for marketplace db
 # TODO: install and use pac cli
-# TODO: remove input params control-price and control-img-extension
 # TODO: check if input-validation works fine
-# TODO: create CHANGELOG file if it doesn't exist
 
 # TODO: Workflow-Build-Release-Upload-CI
   # UPDATE
@@ -303,7 +299,6 @@ jobs:
 
   build:
     needs: solution-configuration
-    if: ${{ false }} # TODO: remove
     runs-on: windows-latest
 
     steps:
@@ -348,7 +343,6 @@ jobs:
     needs:
       - solution-configuration
       - build
-    if: ${{ false }} # TODO: remove
     runs-on: ubuntu-latest
 
     steps:
@@ -437,7 +431,6 @@ jobs:
     needs:
       - solution-configuration
       - upload-to-azure-storage
-    if: ${{ always() }} # TODO: remove
     runs-on: ubuntu-latest
 
     env:
@@ -516,12 +509,6 @@ jobs:
         with:
           connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
           path: tmp/db.sql
-
-      - name: Debug # TODO: remove
-        run: |
-          echo "${{ toJson(steps.execute-sql.outputs) }}"
-          echo "${{ toJson(steps.execute-sql.conclusion) }}"
-          echo "${{ toJson(steps.execute-sql.outcome) }}"
 
   create-release: 
     needs:

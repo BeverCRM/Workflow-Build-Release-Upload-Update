@@ -476,10 +476,6 @@ jobs:
           echo "primary-img-url=$primaryImgUrl" >> $GITHUB_OUTPUT
           echo "markdown-file-url=$markdownFileUrl" >> $GITHUB_OUTPUT
 
-      - name: Debug # TODO: remove
-        run: |
-          echo "${{ toJson(steps.get-github-dynamic-urls.outputs) }}"
-
       - name: Generate SQL script to check if a row already exists in `${{ env.db-table-name }}` table in Azure SQL DB or not (tmp/check.sql)
         run: |
           mkdir -p tmp
@@ -498,18 +494,14 @@ jobs:
           connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
           path: tmp/check.sql
 
+      - name: Debug # TODO: remove
+        run: |
+          echo "${{ toJson(steps.execute-check-sql.outputs) }}"
+
       - name: Display Value (tmp/check.sql) # TODO: remove
         run: |
           echo "${{ toJson(steps.execute-check-sql.outputs) }}"
           echo "recordset: ${{ steps.execute-check-sql.outputs.recordset }}"
-
-      - name: Debug Output # TODO: remove
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const outputs = steps.execute-check-sql.outputs;
-            console.log(outputs);
 
       - name: Display Value (tmp/create.sql) # TODO: remove
         run: |
@@ -553,10 +545,9 @@ jobs:
           connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
           path: tmp/create.sql
 
-      # - name: Display Value (tmp/create.sql) # TODO: remove
-      #   run: |
-      #     echo "result: ${{ steps.execute-create-sql.outputs.result }}"
-      #     echo "resultset: ${{ steps.execute-create-sql.outputs.resultset }}"
+      - name: Debug # TODO: remove
+        run: |
+          echo "${{ toJson(execute-create-sql.outputs) }}"
 
       - name: Display Value (tmp/update.sql) # TODO: remove
         run: |

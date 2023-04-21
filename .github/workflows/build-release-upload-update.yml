@@ -1,0 +1,582 @@
+  name: Build the project & Create a new release & Upload the solution to Azure Blob Storage & Update the Azure SQL Database
+
+# TODO: check if npm run build can be removed
+# TODO: make configurations for marketplace db
+# TODO: install and use pac cli
+# TODO: remove input params control-price and control-img-extension
+# TODO: check if input-validation works fine
+# TODO: create CHANGELOG file if it doesn't exist
+
+# TODO: Workflow-Build-Release-Upload-CI
+  # UPDATE
+  # change file name, change repo name
+  # update input and output parameters
+
+# TODO: Template-PCF
+  # UPDATE
+  # add MarketplaceAssets/images folder with README to indicate thumnail.png and primary.png files
+  # update input and output parameters
+  # change file name, change repo name
+
+
+on:
+  workflow_call:
+    inputs:
+      control-title:
+        description: Control title
+        type: string
+        required: true
+      control-description:
+        description: Control description
+        type: string
+      control-thumbnail-url: # TODO: changed
+        description: Cotnrol thumbnail url (included in use-default)
+        type: string
+      control-primary-image-url: # TODO: changed
+        description: Cotnrol primary image url (included in use-default)
+        type: string
+      control-youtube-video-url:
+        description: Cotnrol youtube video url
+        type: string
+      control-markdown-file-url: # TODO: new
+        description: Cotnrol markdown file url (included in use-default)
+        type: string
+      control-tags:
+        description: Control tags (comma separated | added by default `Bever-Controls, PCF, <control unique name>`)
+        type: string
+      solution-folder:
+        description: Final solution directory
+        default: Solution
+        type: string
+      pcfproj-prefix:
+        description: File name prefix of the .pcfproj
+        default: PCF-
+        type: string
+      release-solution-package-type:
+        description: Solution package type to upload to release assets (none / unmanaged / managed / both)
+        default: managed
+        type: string
+      azure-solution-package-type:
+        description: Solution package type to upload to Azure blob storage (unmanaged / managed / both)
+        default: managed
+        type: string
+      create-new-release:
+        description: Create a new release in GitHub
+        default: true
+        type: boolean
+      delete-old-version-from-azure:
+        description: Delete the old version of the solution from Azure blob storage
+        default: true
+        type: boolean
+      use-default: # TODO: new
+        description: Use default information for control inputs
+        default: true
+        type: boolean
+      node-version:
+        description: Node version
+        default: 16
+        type: number
+
+    outputs:
+      solution-unique-name:
+        description: The solution unique name
+        value: ${{ jobs.solution-configuration.outputs.solution-unique-name }}
+      solution-version:
+        description: The solution version
+        value: ${{ jobs.solution-configuration.outputs.solution-version }}
+      solution-parsed-version:
+        description: The solution parsed version
+        value: ${{ jobs.solution-configuration.outputs.solution-parsed-version }}
+      solution-namespace:
+        description: The solution namespace
+        value: ${{ jobs.solution-configuration.outputs.solution-namespace }}
+      release-id:
+        description: Created release ID
+        value: ${{ jobs.create-release.outputs.release-id }}
+      release-name:
+        description: Created release name
+        value: ${{ jobs.create-release.outputs.release-name }}
+      release-tag-name:
+        description: Created release tag name
+        value: ${{ jobs.create-release.outputs.release-tag-name }}
+      release-url:
+        description: Created release URL, the URL users can navigate to in order to view the release
+        value: ${{ jobs.create-release.outputs.release-url }}
+      unmanaged-zip-exists:
+        description: Whether the unmanaged solution exists or not
+        value: ${{ jobs.main.outputs.unmanaged-zip-exists }}
+      managed-zip-exists:
+        description: Whether the managed solution exists or not
+        value: ${{ jobs.main.outputs.managed-zip-exists }}
+
+jobs:
+  input-validation:
+    runs-on: ubuntu-latest
+
+    outputs:
+      ok: ${{ steps.input-parameters-validation.outputs.ok }}
+      message: ${{ steps.input-parameters-validation.outputs.message }}
+
+    steps:
+      - name: Validation of input parameters
+        id: input-parameters-validation
+        run: |
+          releaseSolutionPackageTypes="none unmanaged managed both"
+          azureSolutionPackageTypes="unmanaged managed both"
+          urlRegex="^(?:https?|file|ftp):\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$"
+          
+          ok=true
+          message=""
+
+          if [[ $( echo "${{ inputs.solution-folder }}" ) == "" ]]; then
+              ok=false
+              message="The parameter 'solution-folder' can not be blank."
+          elif [[ !($releaseSolutionPackageTypes =~ (" "|^)"${{ inputs.release-solution-package-type }}"(" "|$)) ]]; then
+              ok=false
+              message="'${{ inputs.release-solution-package-type }}' is not a valid value for 'release-solution-package-type' parameter."
+          elif [[ !($azureSolutionPackageTypes =~ (" "|^)"${{ inputs.azure-solution-package-type }}"(" "|$)) ]]; then
+              ok=false
+              message="'${{ inputs.azure-solution-package-type }}' is not a valid value for 'azure-solution-package-type' parameter."
+          elif [[ "${{ inputs.control-thumbnail-url }}" =~ $urlRegex ]]; then
+              ok=false
+              message="'${{ inputs.control-thumbnail-url }}' is not a valid value for 'control-thumbnail-url' parameter."
+          elif [[ "${{ inputs.control-primary-image-url }}" =~ $urlRegex ]]; then
+              ok=false
+              message="'${{ inputs.control-primary-image-url }}' is not a valid value for 'control-primary-image-url' parameter."
+            elif [[ "${{ inputs.control-markdown-file-url }}" =~ $urlRegex ]]; then
+              ok=false
+              message="'${{ inputs.control-markdown-file-url }}' is not a valid value for 'control-markdown-file-url' parameter."
+          fi
+
+          echo "ok=$ok" >> $GITHUB_OUTPUT
+          echo "message=$message" >> $GITHUB_OUTPUT
+
+      - name: "Error - input validation"
+        if: ${{ steps.input-parameters-validation.outputs.ok == 'false' }}
+        run: |
+          echo "::error title=Input validation::${{ steps.input-parameters-validation.outputs.message }}"
+          exit 1
+
+  solution-configuration:
+    needs: input-validation
+    if: ${{ needs.input-validation.outputs.ok == 'true' }}needs.solution-configuration.result == 'success'
+    runs-on: windows-latest
+    
+    outputs:
+      solution-unique-name: ${{ steps.get-solution-data.outputs.unique-name }}
+      solution-version: ${{ steps.get-solution-data.outputs.version }}
+      solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
+      solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
+      default-control-thumbnail-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}
+      default-control-primary-image-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_image_url }}
+      default-control-markdown-file-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}
+      repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
+      control-description: ${{ steps.get-control-data.outputs.control-description }}
+      control-tags: ${{ steps.get-control-data.outputs.control-tags }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Get repository metadata
+        id: get-repo-metadata
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+            const { data } = await github.rest.repos.get({ owner, repo });
+
+            data.thumbnail_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/thumbnail.png`;
+            data.primary_image_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
+            data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
+
+            return data;
+
+      - name: Get solution data from `ControlManifest.Input.xml`
+        id: get-solution-data
+        run: |
+          $ControlManifest=Get-ChildItem "*/ControlManifest.Input.xml"
+          [xml]$XmlDocument=Get-Content -Path $ControlManifest.FullName
+          "unique-name=$( $XmlDocument.manifest.control.constructor )" >> $env:GITHUB_OUTPUT
+          "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
+          "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
+          "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
+
+      - name: Get control data
+        id: get-control-data
+        run: |
+          "control-tags='Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ('${{ inputs.control-tags }}' -ne '') { ", ${{ inputs.control-tags }}" } )'" >> $env:GITHUB_OUTPUT
+          "control-description='$(
+            if ('${{ inputs.use-default }}' -eq 'true') { "${{ fromJson(steps.get-repo-metadata.outputs.result).description }}" }
+            else { "${{ inputs.control-tags }}" }
+          )'" >> $env:GITHUB_OUTPUT
+
+      - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
+        id: update-solution-cdsproj
+        run: |
+          $FileName = "${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj"
+          [xml]$XmlDocument = Get-Content -Path $FileName
+
+          $namespace = New-Object System.Xml.XmlNamespaceManager($XmlDocument.NameTable)
+          $namespace.AddNamespace("github-action", $XmlDocument.DocumentElement.NamespaceURI)
+
+          $ItemGroup = $XmlDocument.DocumentElement.AppendChild($XmlDocument.CreateElement("ItemGroup", $XmlDocument.DocumentElement.NamespaceURI))
+          $ProjectReference = $ItemGroup.AppendChild($XmlDocument.CreateElement("ProjectReference", $XmlDocument.DocumentElement.NamespaceURI))
+          $ProjectReference.SetAttribute("Include", "../../${{ inputs.pcfproj-prefix }}${{ steps.get-solution-data.outputs.unique-name }}.pcfproj")
+
+          $SolutionPackageType = $XmlDocument.DocumentElement.SelectSingleNode("//github-action:SolutionPackageType", $namespace)
+          if ($SolutionPackageType -eq $null) {
+            $PropertyGroup = $XmlDocument.DocumentElement.AppendChild($XmlDocument.CreateElement("PropertyGroup", $XmlDocument.DocumentElement.NamespaceURI))
+            $SolutionPackageType = $PropertyGroup.AppendChild($XmlDocument.CreateElement("SolutionPackageType", $XmlDocument.DocumentElement.NamespaceURI))
+          }
+          $SolutionPackageType.InnerText = "Both"
+
+          $XmlDocument.Save($FileName)
+
+      - name: Update `${{ inputs.solution-folder }}/src/Other/Solution.xml`
+        id: update-solution-xml
+        env:
+          publisher-name: 'Bever'
+          publisher-prefix: 'bvr'
+          publisher-description: 'Bever helps small-sized and medium-sized businesses to digitize by using Dynamics 365 & Power Platform.'
+          publisher-email: 'info@bevercrm.com'
+          publisher-phone: '+374 (77) 590071'
+          publisher-website: 'https://bevercrm.com'
+          publisher-city: 'Yerevan'
+          publisher-country: 'Armenia'
+          publisher-street: 'Abelian 6/4'
+          publisher-postal-code: '0038'
+        run: |
+          $FileName = "${{ inputs.solution-folder }}/src/Other/Solution.xml"
+          [xml]$XmlDocument = Get-Content -Path $FileName
+
+          $SolutionDescription = "PCF - ${{ inputs.control-title }}
+        
+          ${{ steps.get-control-data.outputs.control-description }}
+        
+          https://marketplace.bevercrm.com
+        
+          © $( Get-Date -Format yyyy ) BEVER"
+
+          $XmlDocument.ImportExportXml.SolutionManifest.UniqueName = "${{ steps.get-solution-data.outputs.unique-name }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.LocalizedNames.LocalizedName.description = "${{ steps.get-solution-data.outputs.unique-name }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Version = "${{ steps.get-solution-data.outputs.version }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Managed = "2"
+          
+          $XmlDocument.ImportExportXml.SolutionManifest.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
+          $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("description", $SolutionDescription)
+          $XmlDocument.ImportExportXml.SolutionManifest.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
+
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.UniqueName = "${{ env.publisher-name }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.LocalizedNames.LocalizedName.description = "${{ env.publisher-name }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.CustomizationPrefix = "${{ env.publisher-prefix }}"
+
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1.RemoveAttribute("nil", "http://www.w3.org/2001/XMLSchema-instance")
+
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.EMailAddress = "${{ env.publisher-email }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SupportingWebsiteUrl = "${{ env.publisher-website }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Telephone1 = "${{ env.publisher-phone }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].City = "${{ env.publisher-city }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Country = "${{ env.publisher-country }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].Line1 = "${{ env.publisher-street }}"
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Addresses.Address[0].PostalCode = "${{ env.publisher-postal-code }}"
+
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.SelectSingleNode("Descriptions").AppendChild($XmlDocument.CreateElement("Description"))
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("description", "${{ env.publisher-description }}")
+          $XmlDocument.ImportExportXml.SolutionManifest.Publisher.Descriptions.SelectSingleNode("Description").SetAttribute("languagecode", "1033")
+
+          $XmlDocument.Save($FileName)
+
+      - name: Upload solution configuration artifacts
+        id: upload-solution-configuration-artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: solution_configuration_artifacts
+          path: ${{ inputs.solution-folder }}/
+
+  build:
+    needs: solution-configuration
+    if: ${{ false }} # TODO: remove
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download solution configuration artifacts
+        id: download-solution-configuration-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: solution_configuration_artifacts
+          path: tmp/solution/
+
+      - name: Setup Node.js ${{ inputs.node-verion }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-verion }}
+
+      - name: Install dependencies
+        id: install-dependecies
+        run: npm ci
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: MSBuild
+        id: msbuild
+        working-directory: tmp/solution/
+        run: msbuild /t:rebuild /restore /p:configuration=release
+
+      - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` &  `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
+        id: rename-solution-files
+        run: get-childitem -path tmp/solution/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
+
+      - name: Upload solution artifacts
+        id: upload-solution-artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
+          path: tmp/solution/bin/Release/
+
+  upload-to-azure-storage:
+    needs:
+      - solution-configuration
+      - build
+    if: ${{ false }} # TODO: remove
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        
+      - name: Download solution artifacts
+        id: download-solution-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
+          path: tmp/solution/
+
+      - name: Check if directory already exists
+        id: check-if-directory-already-exists
+        run: |
+          result=$( az storage blob exists \
+          --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+          --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+          --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+          --output "tsv" )
+
+          echo "result=$result" >> $GITHUB_OUTPUT
+
+      - name: "Warning - no directory found to delete"
+        if: ${{ steps.check-if-directory-already-exists.outputs.result == 'False' }}
+        run: |
+          echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
+
+      - name: Delete solution old version directory from Azure storage (if exists)
+        id: delete-solution-old-version-directory-from-azure-storage
+        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-directory-already-exists.outputs.result == 'True' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage fs directory delete \
+            --yes \
+            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+
+      - name: Upload solution new version files (unmanaged & managed) to Azure storage
+        id: upload-solution-new-version-files-to-azure-storage
+        if: ${{ inputs.azure-solution-package-type == 'both' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload-batch \
+            --source tmp/solution/ \
+            --destination "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true
+
+      - name: Upload solution new version file (unmanaged) to Azure storage
+        id: upload-solution-new-version-unmanaged-file-to-azure-storage
+        if: ${{ inputs.azure-solution-package-type == 'unmanaged' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload \
+            --file "tmp/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true
+
+      - name: Upload solution new version file (managed) to Azure storage
+        id: upload-solution-new-version-managed-file-to-azure-storage
+        if: ${{ inputs.azure-solution-package-type == 'managed' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload \
+            --file "tmp/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true
+
+  update-database:
+    needs:
+      - solution-configuration
+      - upload-to-azure-storage
+    if: ${{ always() }} # TODO: remove
+    runs-on: ubuntu-latest
+
+    env:
+      db-table-name: pcf_control
+      db-name: marketplacedb
+      db-server-name: bevermarketplaceserver.database.windows.net
+      db-username: ${{ secrets.DB_USERNAME }}
+      db-password: ${{ secrets.DB_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Display Value (tmp/check.sql 1) # TODO: remove
+        run: |
+          echo "SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }} WHERE name = '${{ inputs.control-title }}'"
+
+      - name: Display Value (tmp/check.sql 2) # TODO: remove
+        run: |
+          echo "
+            SELECT CASE WHEN EXISTS(
+              SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
+              WHERE name = '${{ inputs.control-title }}')
+                THEN 'true'
+                ELSE 'false'
+              END AS exists"
+
+      - name: Get GitHub dynamic URLs from Marketplace/Assets
+        id: get-github-dynamic-urls
+        run: |
+          tumbnailUrl="$(
+            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
+              echo '${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}';
+            else
+              echo '${{ inputs.control-thumbnail-url }}';
+            fi)"
+          primaryImageUrl="$(
+            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
+              echo '${{ needs.solution-configuration.outputs.default-control-primary-image-url }}';
+            else
+              echo '${{ inputs.control-primary-image-url }}';
+            fi)"
+          markdownFileUrl="$(
+            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
+              echo '${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}';
+            else
+              echo '${{ inputs.control-markdown-file-url }}';
+            fi)"
+
+          echo "thumbnail-url=$tumbnailUrl" >> $GITHUB_OUTPUT
+          echo "primary-image-url=$primaryImageUrl" >> $GITHUB_OUTPUT
+          echo "markdown-file-url=$markdownFileUrl" >> $GITHUB_OUTPUT
+
+      - name: Display Value (tmp/update.sql) # TODO: remove
+        run: |
+          echo "
+            UPDATE ${{ env.db-table-name }}
+            SET
+              name = '${{ inputs.control-title }}',
+              youtube_url = '${{ inputs.control-youtube-video-url }}',
+              thumbnail_url = '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
+              primary-image-url = '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+              markdown_file_url = '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+              description = '${{ needs.solution-configuration.ouputs.control-description }}',
+              github_repo_url = '${{ needs.solution-configuration.outputs.repo-url }}',
+              blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+              version = 'v${{ needs.solution-configuration.outputs.solution-version }}',
+              tags = '${{ needs.solution-configuration.outputs.control-tags }}'
+            WHERE ${{ env.db-table-name }}_id IN(SELECT TOP 1 ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }} WHERE name = '${{ inputs.control-title }}')"
+
+      - name: Display Value (tmp/create.sql) # TODO: remove
+        run: |
+          echo "
+            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+            VALUES (
+              '${{ inputs.control-title }}',
+              '${{ inputs.control-youtube-video-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+              '${{ needs.solution-configuration.ouputs.control-description }}',
+              '${{ needs.solution-configuration.outputs.repo-url }}',
+              '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+              'v${{ needs.solution-configuration.outputs.solution-version }}',
+              '${{ needs.solution-configuration.outputs.control-tags }}'
+            )"
+
+  create-release: 
+    needs:
+      - solution-configuration
+      - update-database
+    if: ${{ inputs.create-new-release == true }}
+    runs-on: ubuntu-latest
+    
+    outputs:
+      release-id: ${{ steps.create-release.outputs.id }}
+      release-name: v${{ needs.solution-configuration.outputs.solution-version }}
+      release-tag-name: v${{ needs.solution-configuration.outputs.solution-version }}
+      release-url: ${{ steps.create-release.outputs.html_url }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download solution artifacts
+        id: download-solution-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
+          path: tmp/solution/
+
+      - name: Create release v${{ needs.solution-configuration.outputs.solution-version }}
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.solution-configuration.outputs.solution-version }}
+          release_name: v${{ needs.solution-configuration.outputs.solution-version }}
+          body: Please refer to [CHANGELOG.md](https://github.com/BeverCRM/PCF-${{ needs.solution-configuration.outputs.solution-unique-name }}/blob/master/CHANGELOG.md) for details.
+
+      - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` (unmanaged)
+        id: release-unmanaged-solution
+        if: ${{ steps.create-release.conclusion == 'success' && (inputs.release-solution-package-type == 'unmanaged' || inputs.release-solution-package-type == 'both') }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: tmp/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
+          asset_name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload release asset `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip` (managed)
+        id: release-managed-solution
+        if: ${{ steps.create-release.conclusion == 'success' && (inputs.release-solution-package-type == 'managed' || inputs.release-solution-package-type == 'both') }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: tmp/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
+          asset_name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
+          asset_content_type: application/zip

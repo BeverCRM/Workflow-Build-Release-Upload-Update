@@ -431,6 +431,7 @@ jobs:
     needs:
       - solution-configuration
       - upload-to-azure-storage
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     env:
@@ -514,7 +515,8 @@ jobs:
     needs:
       - solution-configuration
       - update-database
-    if: ${{ inputs.create-new-release == true }}
+    # if: ${{ inputs.create-new-release == true }}
+    if: ${{ false }}
     runs-on: ubuntu-latest
     
     outputs:

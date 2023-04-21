@@ -486,7 +486,7 @@ jobs:
               WHERE name = 'Fetch to Subgrid')
                 THEN 'true'
                 ELSE 'false'
-              END AS 'exists'" >> tmp/check.sql
+              END AS exists" >> tmp/check.sql
 
       - name: Execute the SQL script `tmp/check.sql`
         id: execute-check-sql
@@ -498,11 +498,8 @@ jobs:
       - name: Debug # TODO: remove
         run: |
           echo "${{ toJson(steps.execute-check-sql.outputs) }}"
-
-      - name: Display Value (tmp/check.sql) # TODO: remove
-        run: |
-          echo "${{ toJson(steps.execute-check-sql.outputs) }}"
-          echo "recordset: ${{ steps.execute-check-sql.outputs.recordset }}"
+          echo "${{ toJson(steps.execute-create-sql.conclusion) }}"
+          echo "${{ toJson(steps.execute-create-sql.outcome) }}"
 
       - name: Display Value (tmp/create.sql) # TODO: remove
         run: |
@@ -549,6 +546,8 @@ jobs:
       - name: Debug # TODO: remove
         run: |
           echo "${{ toJson(steps.execute-create-sql.outputs) }}"
+          echo "${{ toJson(steps.execute-create-sql.conclusion) }}"
+          echo "${{ toJson(steps.execute-create-sql.outcome) }}"
 
       - name: Display Value (tmp/update.sql) # TODO: remove
         run: |

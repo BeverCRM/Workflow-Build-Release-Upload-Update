@@ -494,7 +494,7 @@ jobs:
                 '${{ inputs.control-title }}',
                 '${{ inputs.control-youtube-video-url }}',
                 '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-                '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+                '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
                 '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
                 '${{ needs.solution-configuration.ouputs.control-description }}',
                 '${{ needs.solution-configuration.outputs.repo-url }}',

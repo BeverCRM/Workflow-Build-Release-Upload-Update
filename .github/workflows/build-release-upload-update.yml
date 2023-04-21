@@ -480,12 +480,12 @@ jobs:
         run: |
           mkdir -p tmp
           echo -n "
-          SELECT CASE WHEN EXISTS(
-            SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
-            WHERE name = '${{ inputs.control-title }}')
-              THEN 'true'
-              ELSE 'false'
-            END AS exists" >> tmp/check.sql
+            SELECT CASE WHEN EXISTS(
+              SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
+              WHERE name = '${{ inputs.control-title }}')
+                THEN 'true'
+                ELSE 'false'
+              END AS 'exists'" >> tmp/check.sql
 
       - name: Execute the SQL script `tmp/check.sql`
         id: execute-check-sql

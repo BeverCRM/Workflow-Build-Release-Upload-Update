@@ -355,6 +355,8 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: tmp/solution/
 
+      # az config set extension.use_dynamic_install=yes_without_prompt
+      # az extension add --name storage-preview
       - name: Check if directory already exists
         id: check-if-directory-already-exists
         run: |

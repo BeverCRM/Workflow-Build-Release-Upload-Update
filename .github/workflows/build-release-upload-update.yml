@@ -196,9 +196,9 @@ jobs:
       - name: Get repository metadata
         id: get-repo-metadata
         run: |
-          "thumbnail-url='${{ github.repository }}/blob/${{ github.ref_escaped }}/MarketplaceAssets/images/thumbnail.png'" >> $env:GITHUB_OUTPUT
-          "primary-img-url='${{ github.repository }}/blob/${{ github.ref_escaped }}/MarketplaceAssets/images/primary.png'" >> $env:GITHUB_OUTPUT
-          "markdown-file-url='${{ github.repository }}/blob/${{ github.ref_escaped }}/README.md'" >> $env:GITHUB_OUTPUT
+          "thumbnail-url='https://github.com/${{ github.repository }}/blob/${{ github.ref#refs/heads/ }}/MarketplaceAssets/images/thumbnail.png'" >> $env:GITHUB_OUTPUT
+          "primary-img-url='https://github.com/${{ github.repository }}/blob/${{ github.ref#refs/heads/ }}/MarketplaceAssets/images/primary.png'" >> $env:GITHUB_OUTPUT
+          "markdown-file-url='https://github.com/${{ github.repository }}/blob/${{ github.ref#refs/heads/ }}/README.md'" >> $env:GITHUB_OUTPUT
 
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data

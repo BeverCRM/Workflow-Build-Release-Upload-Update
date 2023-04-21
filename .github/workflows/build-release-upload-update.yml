@@ -499,6 +499,12 @@ jobs:
           echo "${{ toJson(steps.execute-check-sql.outputs) }}"
           echo "recordset: ${{ steps.execute-check-sql.outputs.recordset }}"
 
+      - name: Debug Output
+        uses: actions/github-script@v6
+        with:
+          script: |
+            console.log(JSON.stringify(context))
+
       - name: Display Value (tmp/create.sql) # TODO: remove
         run: |
           echo "

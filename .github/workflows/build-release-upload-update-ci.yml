@@ -1,10 +1,23 @@
-name: Reusable Workflow - Build & Release & Upload CI
+  name: Build the project & Create a new release & Upload the solution to Azure Blob Storage & Update the Azure SQL Database
 
 # TODO: check if npm run build can be removed
 # TODO: make configurations for marketplace db
 # TODO: install and use pac cli
 # TODO: remove input params control-price and control-img-extension
-# TODO: check if input-validation works fine  
+# TODO: check if input-validation works fine
+# TODO: create CHANGELOG file if it doesn't exist
+
+# TODO: Workflow-Build-Release-Upload-CI
+  # UPDATE
+  # change file name, change repo name
+  # update input and output parameters
+
+# TODO: Template-PCF
+  # UPDATE
+  # add MarketplaceAssets/images folder with README to indicate thumnail.png and primary.png files
+  # update input and output parameters
+  # change file name, change repo name
+
 
 on:
   workflow_call:
@@ -197,7 +210,7 @@ jobs:
           "control-description='$(
             if ('${{ inputs.use-default }}' -eq 'true') { "${{ fromJson(steps.get-repo-metadata.outputs.result).description }}" }
             else { "${{ inputs.control-tags }}" }
-          )'" >> $env:GITHUB_OUTPU
+          )'" >> $env:GITHUB_OUTPUT
 
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj

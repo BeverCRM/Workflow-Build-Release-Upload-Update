@@ -496,7 +496,7 @@ jobs:
                 version = 'v${{ needs.solution-configuration.outputs.solution-version }}',
                 tags = '${{ needs.solution-configuration.outputs.control-tags }}'
             WHEN NOT MATCHED THEN
-              INSERT (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+              INSERT (name, youtube_url, thumbnail_url, primary_img_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
               VALUES (
                 '${{ inputs.control-title }}',
                 '${{ inputs.control-youtube-video-url }}',

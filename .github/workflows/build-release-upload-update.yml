@@ -478,6 +478,7 @@ jobs:
 
       - name: Generate SQL script to check if a row already exists in `${{ env.db-table-name }}` table in Azure SQL DB or not (tmp/check.sql)
         run: |
+          mkdir -p tmp
           echo -n "
           SELECT CASE WHEN EXISTS(
             SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
@@ -500,6 +501,7 @@ jobs:
 
       - name: Generate SQL script to create a new row of `${{ env.db-table-name }}` in Azure SQL DB (tmp/insert.sql)
         run: |
+          mkdir -p tmp
           echo -n "
             INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
             VALUES (

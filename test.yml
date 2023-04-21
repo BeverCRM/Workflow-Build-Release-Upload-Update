@@ -1,0 +1,179 @@
+      # - name: Check if directory already exists
+      #   id: check-if-directory-already-exists
+      #   run: |
+      #     result=$( az storage blob exists \
+      #     --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
+      #     --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+      #     --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+      #     --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+      #     --output "tsv" )
+
+      #     echo "result=$result" >> $GITHUB_OUTPUT
+
+      # - name: Upload `README.md` of the solution new version to Azure storage.
+      #   id: upload-solution-new-version-readme-file-to-azure-storage
+      #   if: ${{ inputs.azure-solution-package-type != 'both' }}
+      #   uses: Azure/cli@v1
+      #   with:
+      #     inlineScript: |
+      #       az storage blob upload \
+      #       --file "github-action/solution/README.md" \
+      #       --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+      #       --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+      #       --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+      #       --content-type text/markdown \
+      #       --overwrite true
+
+      # - name: Create a new raw of pcf_control table in Azure SQL DB
+      #   uses: azure/sql-action@v2.1
+      #   with:
+      #     # required, connection string incl the database and user authentication information
+      #     connection-string:
+      #     # required, path to either a .sql, .dacpac, or .sqlproj file
+      #     path:
+      #     # optional when using a .sql script, required otherwise
+      #     # sqlpackage action on the .dacpac or .sqlproj file, supported options are: Publish, Script, DeployReport, DriftReport
+      #     action:
+      #     # optional additional sqlpackage or go-sqlcmd arguments
+      #     arguments:
+      #     # optional additional dotnet build options when building a database project file
+      #     build-arguments:
+
+      # - name: Generate SQL script to insert record
+      #   uses: microsoft/mssql-scripter@v1
+      #   with:
+      #     script-destination: tmp/db.sql
+      #     server: ${{ env.db-server-name }}
+      #     database: ${{ env.db-name }}
+      #     username: ${{ env.db-username }}
+      #     password: ${{ env.db-password }}
+      #   run: |
+      #     echo "INSERT INTO your-table-name (column1, column2, column3) VALUES ('value1', 'value2', 'value3');" >> ./insert.sql
+
+      # - name: Execute SQL script to insert record
+      #   uses: microsoft/mssql-cli@v1
+      #   with:
+      #     server: ${{ env.db-server-name }}
+      #     database: ${{ env.db-name }}
+      #     username: ${{ env.db-username }}
+      #     password: ${{ env.db-password }}
+      #     file: ./insert.sql
+
+      # - name: Generate SQL script to create a new row or to update the row if it already exists
+        # id: generate-sql-script
+        # uses: microsoft/mssql-scripter@v1
+        # with:
+        #   script-destination: tmp/db.sql
+        #   server: ${{ env.db-server-name }}
+        #   database: ${{ env.db-name }}
+        #   username: ${{ env.db-username }}
+        #   password: ${{ env.db-password }}
+        # run: |
+        #   tumbnailUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}"; else echo "${{ inputs.control-thumbnail-url }}"; fi)"
+        #   primaryImageUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-primary-image-url }}"; else echo "${{ inputs.control-primary-image-url }}"; fi)"
+        #   markdownFileUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}"; else echo "${{ inputs.control-markdown-file-url }}"; fi)"
+
+        #   echo "
+        #     IF EXISTS (SELECT pcf_control_id FROM pcf_control WHERE name = '${{ inputs.control-title }}')
+        #     BEGIN
+        #       UPDATE pcf_control
+        #       SET
+        #         name = '${{ inputs.control-title }}'
+        #         description = '${{ inputs.control-description }}'
+        #         thumbnail_url = '$tumbnailUrl'
+        #         primary-image-url = '$primaryImageUrl'
+        #         markdown_file_url = '$markdownFileUrl'
+        #         youtube_url = '${{ inputs.control-youtube-video-url }}'
+        #         github_repo_url = 'https://github.com/${{ env.GITHUB_REPOSITORY }}'
+        #         blob_url = '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
+        #         version = 'v${{ needs.solution-configuration.outputs.solution-version }}'
+        #         tags = '${{ inputs.control-tags }}'
+        #       WHERE pcf_control_id IN(SELECT TOP 1 pcf_control_id FROM pcf_control WHERE name = '${{ inputs.control-title }}')
+        #     END
+        #     ELSE
+        #       INSERT INTO pcf_control (name, description, thumbnail_url, primary_image_url, markdown_file_url, youtube_url, github_repo_url, blob_url, version, tags)
+        #       VALUES (
+        #         '${{ inputs.control-title }}',
+        #         '${{ inputs.control-description }}',
+        #         '$tumbnailUrl',
+        #         '$primaryImageUrl',
+        #         '$markdownFileUrl',
+        #         '${{ inputs.control-youtube-video-url }}',
+        #         'https://github.com/${{ env.GITHUB_REPOSITORY }}',
+        #         '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+        #         'v${{ needs.solution-configuration.outputs.solution-version }}',
+        #         '${{ inputs.control-tags }}'
+        #       )
+        #     END" >> tmp/insert.sql
+
+      # - name: Execute the SQL script
+      #   id: execute-sql-script
+      #   uses: microsoft/mssql-cli@v1
+      #   with:
+      #     server: ${{ env.db-server-name }}
+      #     database: ${{ env.db-name }}
+      #     username: ${{ env.db-username }}
+      #     password: ${{ env.db-password }}
+      #     file: tmp/db.sql
+
+      # - name: Generate SQL script to check if a row already exists in DB or not (tmp/check.sql)
+        # id: generate-check-sql
+        # uses: microsoft/mssql-scripter@v1
+        # with:
+        #   script-destination: tmp/check.sql
+        #   server: ${{ env.db-server-name }}
+        #   database: ${{ env.db-name }}
+        #   username: ${{ env.db-username }}
+        #   password: ${{ env.db-password }}
+        # run: |
+        #   echo "
+        #     SELECT CASE WHEN EXISTS(
+        #       SELECT pcf_control_id FROM pcf_control
+        #       WHERE name = '${{ inputs.control-title }}')
+        #         THEN 'true'
+        #         ELSE 'false'
+        #       END AS exists" >> tmp/check.sql
+
+      # - name: Execute the SQL script tmp/check.sql
+      #   id: execute-check-sql
+      #   uses: microsoft/mssql-cli@v1
+      #   with:
+      #     server: ${{ env.db-server-name }}
+      #     database: ${{ env.db-name }}
+      #     username: ${{ env.db-username }}
+      #     password: ${{ env.db-password }}
+      #     file: tmp/check.sql
+
+      # - name: Generate SQL script to update the row (tmp/update.sql)
+      #   id: generate-update-sql
+      #   if: ${{ steps.execute-check-sql.outputs.row-exists == 'true' }}
+      #   run: |
+      #     tumbnailUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}"; else echo "${{ inputs.control-thumbnail-url }}"; fi)"
+      #     primaryImageUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-primary-image-url }}"; else echo "${{ inputs.control-primary-image-url }}"; fi)"
+      #     markdownFileUrl="$(if [[ "${{ inputs.use-default }}" == "true" ]]; then echo "${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}"; else echo "${{ inputs.control-markdown-file-url }}"; fi)"
+          
+      #     echo "
+      #       UPDATE pcf_control
+      #       SET
+      #         name = '${{ inputs.control-title }}'
+      #         description = '${{ inputs.control-description }}'
+      #         thumbnail_url = '$tumbnailUrl'
+      #         primary-image-url = '$primaryImageUrl'
+      #         markdown_file_url = '$markdownFileUrl'
+      #         youtube_url = '${{ inputs.control-youtube-video-url }}'
+      #         github_repo_url = 'https://github.com/${{ env.GITHUB_REPOSITORY }}'
+      #         blob_url = '${{ ${{ needs.solution-configuration.outputs.solution-unique-name }} }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip'
+      #         version = 'v${{ needs.solution-configuration.outputs.solution-version }}'
+      #         tags = '${{ inputs.control-tags }}'
+      #       WHERE pcf_control_id IN(SELECT TOP 1 pcf_control_id FROM pcf_control WHERE name = '${{ inputs.control-title }}')" >> tmp/update.sql
+
+      # - name: Get row data from Azure SQL database
+      #   id: get-row
+      #   uses: Azure/sql-action@v1.1.0
+      #   with:
+      #     server-name: your-server-name
+      #     database-name: your-database-name
+      #     query: SELECT * FROM your-table-name WHERE id = 123
+      #     outputs: |
+      #       column1: ${{ steps.get-row.outputs.result[0].column1 }}
+      #       column2: ${{ steps.get-row.outputs.result[0].column2 }}

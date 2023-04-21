@@ -524,6 +524,39 @@ jobs:
               '${{ needs.solution-configuration.outputs.control-tags }}'
             )"
 
+      - name: Generate SQL script to insert record
+        uses: microsoft/mssql-scripter@v1
+        with:
+          script-destination: tmp/db.sql
+          server: ${{ env.db-server-name }}
+          database: ${{ env.db-name }}
+          username: ${{ env.db-username }}
+          password: ${{ env.db-password }}
+        run: |
+          echo "
+            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_image_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+            VALUES (
+              '${{ inputs.control-title }}',
+              '${{ inputs.control-youtube-video-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.primary-image-url }}',
+              '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+              '${{ needs.solution-configuration.ouputs.control-description }}',
+              '${{ needs.solution-configuration.outputs.repo-url }}',
+              '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+              'v${{ needs.solution-configuration.outputs.solution-version }}',
+              '${{ needs.solution-configuration.outputs.control-tags }}'
+            )" >> ./insert.sql
+
+      - name: Execute SQL script to insert record
+        uses: microsoft/mssql-cli@v1
+        with:
+          server: ${{ env.db-server-name }}
+          database: ${{ env.db-name }}
+          username: ${{ env.db-username }}
+          password: ${{ env.db-password }}
+          file: ./insert.sql
+
   create-release: 
     needs:
       - solution-configuration

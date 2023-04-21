@@ -547,7 +547,7 @@ jobs:
 
       - name: Debug # TODO: remove
         run: |
-          echo "${{ toJson(execute-create-sql.outputs) }}"
+          echo "${{ toJson(steps.execute-create-sql.outputs) }}"
 
       - name: Display Value (tmp/update.sql) # TODO: remove
         run: |

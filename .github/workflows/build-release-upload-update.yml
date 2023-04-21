@@ -476,13 +476,14 @@ jobs:
           echo "primary-img-url=$primaryImgUrl" >> $GITHUB_OUTPUT
           echo "markdown-file-url=$markdownFileUrl" >> $GITHUB_OUTPUT
 
+      # '${{ inputs.control-title }}'
       - name: Generate SQL script to check if a row already exists in `${{ env.db-table-name }}` table in Azure SQL DB or not (tmp/check.sql)
         run: |
           mkdir -p tmp
           echo -n "
             SELECT CASE WHEN EXISTS(
               SELECT ${{ env.db-table-name }}_id FROM ${{ env.db-table-name }}
-              WHERE name = '${{ inputs.control-title }}')
+              WHERE name = 'Fetch to Subgrid')
                 THEN 'true'
                 ELSE 'false'
               END AS 'exists'" >> tmp/check.sql
@@ -524,7 +525,7 @@ jobs:
         run: |
           mkdir -p tmp
           echo -n "
-            INSERT INTO ${{ env.db-table-name }} (name, youtube_url, thumbnail_url, primary_img_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+            INSERT INTO ${{ env.db-table-name }}a (name, youtube_url, thumbnail_url, primary_img_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
             VALUES (
               '${{ inputs.control-title }}',
               '${{ inputs.control-youtube-video-url }}',

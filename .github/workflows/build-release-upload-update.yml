@@ -360,18 +360,25 @@ jobs:
         uses: Azure/cli@v1
         with:
           inlineScript: |
-            result=$( az storage fs directory exists \
-              --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-              --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-              --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-              --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-              --output "tsv" )
+            result=$( az storage blob list \
+            --prefix "${{ needs.solution-configuration.outputs.solution-unique-name }}/" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" )
 
             echo "result=$result" >> $GITHUB_OUTPUT
 
+      # result=$( az storage fs directory exists \
+      # --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+      # --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+      # --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+      # --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+      # --output "tsv" )
+
       - name: Debug 1 # TODO: remove
         run: |
-          echo "${{ steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result }}"
+          echo "json: ${{ fromJson(steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result) }}"
+          echo "raw: ${{ steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result }}"
 
       - name: "Warning - no directory found to delete"
         if: ${{ steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result == 'False' }}

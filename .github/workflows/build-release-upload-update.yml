@@ -379,32 +379,20 @@ jobs:
 
       - name: Debug 1
         run: |
-          echo "${{ steps.check-if-directory-already-exists.outputs.result }}"
+          echo "${{ steps.check-directory-exists.outputs.result }}"
 
-      # - name: Delete solution old version files from Azure Blob Storage
-      #   id: delete-solution-old-version-files-from-azure-storage
-      #   if: ${{ inputs.delete-old-version == true }}
-      #   uses: Azure/cli@v1
-      #   with:
-      #     inlineScript: |
-      #       az storage blob delete-batch \
-      #       --pattern "${{ needs.build.outputs.solution-unique-name }}_*.zip" \
-      #       --source "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-      #       --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}_*.zip" \
-      #       --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
-
-      # - name: Delete solution old version directory from Azure storage
-      #   id: delete-solution-old-version-directory-from-azure-storage
-      #   if: ${{ inputs.delete-old-version-from-azure == true }}
-      #   uses: Azure/cli@v1
-      #   with:
-      #     inlineScript: |
-      #       az storage fs directory delete \
-      #       --yes \
-      #       --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-      #       --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-      #       --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-      #       --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+      - name: Delete solution directory from Azure Blob Storage
+        id: delete-solution-directory-from-azure-storage
+        if: ${{ inputs.delete-old-version-from-azure == true }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage fs directory delete \
+            --yes \
+            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
       - name: Upload solution new version files (unmanaged & managed) to Azure storage
         id: upload-solution-new-version-files-to-azure-storage

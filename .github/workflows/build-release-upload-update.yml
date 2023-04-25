@@ -1,7 +1,6 @@
 name: Build the project & Create a new release & Upload the solution to Azure Blob Storage & Update the Azure SQL Database
 
 # TODO: install and use pac cli
-# TODO: check if input-validation works fine (check urls)
 
 # TODO: Workflow-Build-Release-Upload-CI
   # UPDATE
@@ -364,7 +363,8 @@ jobs:
             --prefix "${{ needs.solution-configuration.outputs.solution-unique-name }}/" \
             --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" )
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --output "tsv" )
 
             echo "result=$result" >> $GITHUB_OUTPUT
 

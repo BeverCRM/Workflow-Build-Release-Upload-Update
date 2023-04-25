@@ -361,7 +361,7 @@ jobs:
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --output "tsv" )
 
-            echo "result=$result" >> $GITHUB_OUTPUT
+            echo "result='$result'" >> $GITHUB_OUTPUT
 
       # result=$( az storage fs directory exists \
       # --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \

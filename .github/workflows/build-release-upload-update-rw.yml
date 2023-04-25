@@ -1,6 +1,7 @@
 name: Build the project & Create a new release & Upload the solution to Azure Blob Storage & Update the Azure SQL Database
 
 # TODO: install and use pac cli
+# TODO: Workflow-Build-Release-Upload-Update, build-release-upload-update-rw
 
 # TODO: Workflow-Build-Release-Upload-CI
   # UPDATE
@@ -96,12 +97,6 @@ on:
       release-url:
         description: Created release URL, the URL users can navigate to in order to view the release
         value: ${{ jobs.create-release.outputs.release-url }}
-      unmanaged-zip-exists:
-        description: Whether the unmanaged solution exists or not
-        value: ${{ jobs.main.outputs.unmanaged-zip-exists }}
-      managed-zip-exists:
-        description: Whether the managed solution exists or not
-        value: ${{ jobs.main.outputs.managed-zip-exists }}
 
 jobs:
   input-validation:

@@ -1,7 +1,7 @@
 name: Build the project & Create a new release & Upload the solution to Azure Blob Storage & Update the Azure SQL Database
 
 # TODO: install and use pac cli
-# TODO: check if input-validation works fine
+# TODO: check if input-validation works fine (check urls)
 
 # TODO: Workflow-Build-Release-Upload-CI
   # UPDATE
@@ -118,7 +118,7 @@ jobs:
         run: |
           releaseSolutionPackageTypes="none unmanaged managed both"
           azureSolutionPackageTypes="unmanaged managed both"
-          urlRegex="^(?:https?|file|ftp):\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$"
+          urlRegex="^(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]$"
           
           ok=true
           message=""
@@ -376,7 +376,7 @@ jobs:
       - name: "Warning - no directory found to delete"
         if: ${{ steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result == 'False' }}
         run: |
-          echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
+          echo "::warning title=Delete solution old version from Azure Blob Storage::No directory found with name `${{ needs.solution-configuration.outputs.solution-unique-name }}` to delete."
 
       - name: Delete solution directory from Azure Blob Storage (if exists)
         id: delete-solution-directory-from-azure-storage

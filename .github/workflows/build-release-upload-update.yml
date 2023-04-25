@@ -14,9 +14,6 @@ name: Build the project & Create a new release & Upload the solution to Azure Bl
   # update input and output parameters
   # change file name, change repo name
 
-
-# ! TODO: Check the whole file
-
 on:
   workflow_call:
     inputs:
@@ -416,7 +413,6 @@ jobs:
     needs:
       - solution-configuration
       - upload-to-azure-storage
-    if: ${{ false }}
     runs-on: ubuntu-latest
 
     env:
@@ -500,8 +496,7 @@ jobs:
     needs:
       - solution-configuration
       - update-database
-    # if: ${{ inputs.create-new-release == true }}
-    if: ${{ false }}
+    if: ${{ inputs.create-new-release == true }}
     runs-on: ubuntu-latest
     
     outputs:

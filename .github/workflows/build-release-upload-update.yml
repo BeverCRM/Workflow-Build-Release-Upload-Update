@@ -354,9 +354,33 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: tmp/solution/
 
-      - name: Delete solution directory from Azure Blob Storage
-        id: delete-solution-directory-from-azure-storage
+      - name: Check if solution directory already exists in Azure Blob Storage
+        id: check-if-solution-directory-already-exists-in-azure-storage
         if: ${{ inputs.delete-old-version-from-azure == true }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            result=$( az storage fs directory exists \
+              --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+              --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+              --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+              --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+              --output "tsv" )
+
+            echo "result=$result" >> $GITHUB_OUTPUT
+
+      - name: Debug 1 # TODO: remove
+        run: |
+          echo "${{ steps.check-directory-exists.outputs.result }}"
+
+      - name: "Warning - no directory found to delete"
+        if: ${{ steps.check-if-directory-already-exists.outputs.result == 'False' }}
+        run: |
+          echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
+
+      - name: Delete solution directory from Azure Blob Storage (if exists)
+        id: delete-solution-directory-from-azure-storage
+        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-directory-already-exists.outputs.result == 'True' }}
         uses: Azure/cli@v1
         with:
           inlineScript: |
@@ -414,6 +438,7 @@ jobs:
       - solution-configuration
       - upload-to-azure-storage
     runs-on: ubuntu-latest
+    if: ${{ false }} # TODO: remove
 
     env:
       db-table-name: pcf_control
@@ -496,7 +521,8 @@ jobs:
     needs:
       - solution-configuration
       - update-database
-    if: ${{ inputs.create-new-release == true }}
+    # if: ${{ inputs.create-new-release == true }}
+    if: ${{ false }} # TODO: remove
     runs-on: ubuntu-latest
     
     outputs:

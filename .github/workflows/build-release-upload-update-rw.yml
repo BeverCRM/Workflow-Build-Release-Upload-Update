@@ -22,18 +22,18 @@ on:
         type: string
         required: true
       control-description:
-        description: Control description
+        description: Control description (included in use-default)
         type: string
-      control-thumbnail-url: # TODO: changed
+      control-thumbnail-url:
         description: Cotnrol thumbnail url (included in use-default)
         type: string
-      control-primary-img-url: # TODO: changed
+      control-primary-img-url:
         description: Cotnrol primary image url (included in use-default)
         type: string
       control-youtube-video-url:
         description: Cotnrol youtube video url
         type: string
-      control-markdown-file-url: # TODO: new
+      control-markdown-file-url:
         description: Cotnrol markdown file url (included in use-default)
         type: string
       control-tags:
@@ -63,7 +63,7 @@ on:
         description: Delete the old version of the solution from Azure blob storage
         default: true
         type: boolean
-      use-default: # TODO: new
+      use-default:
         description: Use default information for control inputs
         default: true
         type: boolean
@@ -156,12 +156,12 @@ jobs:
       solution-version: ${{ steps.get-solution-data.outputs.version }}
       solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
       solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
-      default-control-thumbnail-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}
-      default-control-primary-img-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_img_url }}
-      default-control-markdown-file-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}
-      repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
+      control-thumbnail-url: ${{ steps.get-default-values-from-github.outputs.control-thumbnail-url }}
+      control-primary-img-url: ${{ steps.get-default-values-from-github.outputs.control-primary-img-url }}
+      control-markdown-file-url: ${{ steps.get-default-values-from-github.outputs.control-markdown-file-url }}
       control-description: ${{ steps.get-control-data.outputs.control-description }}
       control-tags: ${{ steps.get-control-data.outputs.control-tags }}
+      repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
 
     steps:
       - uses: actions/checkout@v3
@@ -182,6 +182,29 @@ jobs:
 
             return data;
 
+      - name: Get default values from GitHub
+        id: get-default-values-from-github
+        run: |
+          "control-description='$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).description }}' }
+            else { '${{ inputs.control-description }}' }
+          )'" >> $env:GITHUB_OUTPUT
+          
+          "control-thumbnail-url='$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}' }
+            else { '${{ inputs.control-thumbnail-url }}' }
+          )'" >> $env:GITHUB_OUTPUT
+          
+          "control-primary-img-url='$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).primary_img_url }}' }
+            else { '${{ inputs.control-primary-img-url }}' }
+          )'" >> $env:GITHUB_OUTPUT
+
+          "control-markdown-file-url='$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}' }
+            else { '${{ inputs.control-markdown-file-url }}' }
+          )'" >> $env:GITHUB_OUTPUT
+
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data
         run: |
@@ -196,10 +219,6 @@ jobs:
         id: get-control-data
         run: |
           "control-tags=Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ('${{ inputs.control-tags }}' -ne '') { ', ${{ inputs.control-tags }}' } )" >> $env:GITHUB_OUTPUT
-          "control-description='$(
-            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).description }}' }
-            else { '${{ inputs.control-tags }}' }
-          )'" >> $env:GITHUB_OUTPUT
 
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj
@@ -428,7 +447,6 @@ jobs:
       - solution-configuration
       - upload-to-azure-storage
     runs-on: ubuntu-latest
-    if: ${{ false }} # TODO: remove
 
     env:
       db-table-name: pcf_control
@@ -439,32 +457,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Get GitHub dynamic URLs from Marketplace/Assets
-        id: get-github-dynamic-urls
-        run: |
-          tumbnailUrl="$(
-            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
-              echo '${{ needs.solution-configuration.outputs.default-control-thumbnail-url }}';
-            else
-              echo '${{ inputs.control-thumbnail-url }}';
-            fi)"
-          primaryImgUrl="$(
-            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
-              echo '${{ needs.solution-configuration.outputs.default-control-primary-img-url }}';
-            else
-              echo '${{ inputs.control-primary-img-url }}';
-            fi)"
-          markdownFileUrl="$(
-            if [[ $( echo '${{ inputs.use-default }}' ) == 'true' ]]; then
-              echo '${{ needs.solution-configuration.outputs.default-control-markdown-file-url }}';
-            else
-              echo '${{ inputs.control-markdown-file-url }}';
-            fi)"
-
-          echo "thumbnail-url=$tumbnailUrl" >> $GITHUB_OUTPUT
-          echo "primary-img-url=$primaryImgUrl" >> $GITHUB_OUTPUT
-          echo "markdown-file-url=$markdownFileUrl" >> $GITHUB_OUTPUT
 
       - name: Generate SQL script to create/update a row of `${{ env.db-table-name }}` table in Azure SQL DB depending on whether the row already exists or not (tmp/db.sql)
         run: |
@@ -477,9 +469,9 @@ jobs:
               UPDATE SET
                 name = '${{ inputs.control-title }}',
                 youtube_url = '${{ inputs.control-youtube-video-url }}',
-                thumbnail_url = '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-                primary_img_url = '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
-                markdown_file_url = '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+                thumbnail_url = '${{ needs.solution-configuration.ouputs.control-thumbnail-url }}',
+                primary_img_url = '${{ needs.solution-configuration.ouputs.control-primary-img-url }}',
+                markdown_file_url = '${{ needs.solution-configuration.ouputs.control-markdown-file-url }}',
                 description = '${{ needs.solution-configuration.ouputs.control-description }}',
                 github_repo_url = '${{ needs.solution-configuration.outputs.repo-url }}',
                 blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
@@ -490,9 +482,9 @@ jobs:
               VALUES (
                 '${{ inputs.control-title }}',
                 '${{ inputs.control-youtube-video-url }}',
-                '${{ steps.get-github-dynamic-urls.outputs.thumbnail-url }}',
-                '${{ steps.get-github-dynamic-urls.outputs.primary-img-url }}',
-                '${{ steps.get-github-dynamic-urls.outputs.markdown-file-url }}',
+                '${{ needs.solution-configuration.ouputs.control-thumbnail-url }}',
+                '${{ needs.solution-configuration.ouputs.control-primary-img-url }}',
+                '${{ needs.solution-configuration.ouputs.control-markdown-file-url }}',
                 '${{ needs.solution-configuration.ouputs.control-description }}',
                 '${{ needs.solution-configuration.outputs.repo-url }}',
                 '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
@@ -511,8 +503,7 @@ jobs:
     needs:
       - solution-configuration
       - update-database
-    # if: ${{ inputs.create-new-release == true }}
-    if: ${{ false }} # TODO: remove
+    if: ${{ inputs.create-new-release == true }}
     runs-on: ubuntu-latest
     
     outputs:

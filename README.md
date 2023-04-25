@@ -35,7 +35,7 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>string</td>
     <td>---</td>
     <td>---</td>
-    <td>Control description</td>
+    <td>Control description (included in use-default)</td>
   </tr>
   <tr>
     <td>control-youtube-video-url</td>

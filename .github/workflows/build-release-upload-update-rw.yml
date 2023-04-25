@@ -361,20 +361,20 @@ jobs:
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
             --output "tsv" )
 
-            echo "result='$result'" >> $GITHUB_OUTPUT
+            echo "result=${#result}" >> $GITHUB_OUTPUT
 
       - name: Debug 1 # TODO: remove
         run: |
           echo "${{ steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result }}"
 
       - name: "Warning - no directory found to delete"
-        if: ${{ steps.check-if-solution-directory-already-exists-in-azure-storage.conclusion != 'skipped' && steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result == '' }}
+        if: ${{ steps.check-if-solution-directory-already-exists-in-azure-storage.conclusion != 'skipped' && steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result == 0 }}
         run: |
           echo "::warning title=Delete solution old version from Azure Blob Storage::No directory found with name `${{ needs.solution-configuration.outputs.solution-unique-name }}` to delete."
 
       - name: Delete solution directory from Azure Blob Storage (if exists)
         id: delete-solution-directory-from-azure-storage
-        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result != '' }}
+        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result != 0 }}
         uses: Azure/cli@v1
         with:
           inlineScript: |

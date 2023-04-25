@@ -357,30 +357,6 @@ jobs:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
           path: tmp/solution/
 
-      - name: Check if directory already exists
-        id: check-directory-exists
-        if: ${{ inputs.delete-old-version-from-azure == true }}
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            result=$( az storage fs directory exists \
-              --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-              --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-              --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-              --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-              --output "tsv" )
-
-            echo "result=$result" >> $GITHUB_OUTPUT
-
-      # - name: "Warning - no directory found to delete"
-      #   if: ${{ steps.check-if-directory-already-exists.outputs.result == 'False' }}
-      #   run: |
-      #     echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
-
-      - name: Debug 1
-        run: |
-          echo "${{ steps.check-directory-exists.outputs.result }}"
-
       - name: Delete solution directory from Azure Blob Storage
         id: delete-solution-directory-from-azure-storage
         if: ${{ inputs.delete-old-version-from-azure == true }}
@@ -394,7 +370,7 @@ jobs:
             --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
             --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
 
-      - name: Upload solution new version files (unmanaged & managed) to Azure storage
+      - name: Upload solution new version files (unmanaged & managed) to Azure Blob Storage
         id: upload-solution-new-version-files-to-azure-storage
         if: ${{ inputs.azure-solution-package-type == 'both' }}
         uses: Azure/cli@v1
@@ -408,7 +384,7 @@ jobs:
             --content-type application/zip \
             --overwrite true
 
-      - name: Upload solution new version file (unmanaged) to Azure storage
+      - name: Upload solution new version file (unmanaged) to Azure Blob Storage
         id: upload-solution-new-version-unmanaged-file-to-azure-storage
         if: ${{ inputs.azure-solution-package-type == 'unmanaged' }}
         uses: Azure/cli@v1
@@ -422,7 +398,7 @@ jobs:
             --content-type application/zip \
             --overwrite true
 
-      - name: Upload solution new version file (managed) to Azure storage
+      - name: Upload solution new version file (managed) to Azure Blob Storage
         id: upload-solution-new-version-managed-file-to-azure-storage
         if: ${{ inputs.azure-solution-package-type == 'managed' }}
         uses: Azure/cli@v1

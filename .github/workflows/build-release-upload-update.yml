@@ -377,6 +377,10 @@ jobs:
       #   run: |
       #     echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
 
+      - name: Debug 1
+        run: |
+          echo "${{ steps.check-if-directory-already-exists.outputs.result }}"
+
       # - name: Delete solution old version files from Azure Blob Storage
       #   id: delete-solution-old-version-files-from-azure-storage
       #   if: ${{ inputs.delete-old-version == true }}

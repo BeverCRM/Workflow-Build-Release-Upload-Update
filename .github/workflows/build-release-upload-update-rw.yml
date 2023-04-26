@@ -434,6 +434,7 @@ jobs:
     needs:
       - solution-configuration
       - upload-to-azure-storage
+    if: ${{ always() }} # TODO: remove
     runs-on: ubuntu-latest
 
     env:

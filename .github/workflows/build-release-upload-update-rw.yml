@@ -182,14 +182,6 @@ jobs:
 
             return data;
 
-      - name: Debug 1 # TODO: remove
-        run: |
-          echo "description: ${{ fromJson(steps.get-repo-metadata.outputs.result).description }}"
-          echo "thumbnail_url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}"
-          echo "primary_img_url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_img_url }}"
-          echo "markdown_file_url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}"
-          echo "${{ steps.get-repo-metadata.outputs.result }}"
-
       - name: Get default values from GitHub
         id: get-default-values-from-github
         run: |
@@ -466,7 +458,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Generate SQL script to create/update a row of `${{ env.db-table-name }}` table in Azure SQL DB depending on whether the row already exists or not (tmp/db.sql)
+      - name: Generate SQL script to create/update a row of the `${{ env.db-table-name }}` table in Azure SQL Database depending on whether the row already exists or not (tmp/db.sql)
         run: |
           mkdir -p tmp
           echo -n "
@@ -500,7 +492,7 @@ jobs:
                 '${{ needs.solution-configuration.outputs.control-tags }}'
               );" >> tmp/db.sql
 
-      - name: Execute the SQL script `tmp/check.sql`
+      - name: Execute the SQL script `tmp/db.sql`
         id: execute-sql
         uses: azure/sql-action@v2.1
         with:

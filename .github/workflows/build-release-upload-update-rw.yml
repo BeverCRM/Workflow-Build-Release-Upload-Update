@@ -182,6 +182,10 @@ jobs:
 
             return data;
 
+      - name: Debug # TODO: remove
+        run: |
+          echo "${{ fromJson(steps.get-repo-metadata.outputs.result).description }}"
+
       - name: Get default values from GitHub
         id: get-default-values-from-github
         run: |

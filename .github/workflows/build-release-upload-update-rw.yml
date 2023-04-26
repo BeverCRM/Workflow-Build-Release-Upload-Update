@@ -185,25 +185,25 @@ jobs:
       - name: Get default values from GitHub
         id: get-default-values-from-github
         run: |
-          "control-description='$(
+          "control-description=$(
             if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).description }}' }
             else { '${{ inputs.control-description }}' }
-          )'" >> $env:GITHUB_OUTPUT
+          )" >> $env:GITHUB_OUTPUT
           
-          "control-thumbnail-url='$(
+          "control-thumbnail-url=$(
             if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}' }
             else { '${{ inputs.control-thumbnail-url }}' }
-          )'" >> $env:GITHUB_OUTPUT
+          )" >> $env:GITHUB_OUTPUT
           
-          "control-primary-img-url='$(
+          "control-primary-img-url=$(
             if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).primary_img_url }}' }
             else { '${{ inputs.control-primary-img-url }}' }
-          )'" >> $env:GITHUB_OUTPUT
+          )" >> $env:GITHUB_OUTPUT
 
-          "control-markdown-file-url='$(
+          "control-markdown-file-url=$(
             if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}' }
             else { '${{ inputs.control-markdown-file-url }}' }
-          )'" >> $env:GITHUB_OUTPUT
+          )" >> $env:GITHUB_OUTPUT
 
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data

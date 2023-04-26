@@ -298,7 +298,6 @@ jobs:
   build:
     needs: solution-configuration
     runs-on: windows-latest
-    if: ${{ false }} # TODO: remove
 
     steps:
       - uses: actions/checkout@v3
@@ -343,7 +342,6 @@ jobs:
       - solution-configuration
       - build
     runs-on: ubuntu-latest
-    if: ${{ false }} # TODO: remove
 
     steps:
       - uses: actions/checkout@v3
@@ -434,7 +432,6 @@ jobs:
     needs:
       - solution-configuration
       - upload-to-azure-storage
-    if: ${{ always() }} # TODO: remove
     runs-on: ubuntu-latest
 
     env:
@@ -492,8 +489,7 @@ jobs:
     needs:
       - solution-configuration
       - update-database
-    # if: ${{ inputs.create-new-release == true }}
-    if: ${{ false }} # TODO: remove
+    if: ${{ inputs.create-new-release == true }}
     runs-on: ubuntu-latest
     
     outputs:

@@ -503,7 +503,8 @@ jobs:
     needs:
       - solution-configuration
       - update-database
-    if: ${{ inputs.create-new-release == true }}
+    # if: ${{ inputs.create-new-release == true }}
+    if: ${{ false }}
     runs-on: ubuntu-latest
     
     outputs:

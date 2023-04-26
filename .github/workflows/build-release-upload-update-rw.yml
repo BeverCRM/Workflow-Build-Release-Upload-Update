@@ -145,7 +145,7 @@ jobs:
       control-thumbnail-url: ${{ steps.get-default-values-from-github.outputs.control-thumbnail-url }}
       control-primary-img-url: ${{ steps.get-default-values-from-github.outputs.control-primary-img-url }}
       control-markdown-file-url: ${{ steps.get-default-values-from-github.outputs.control-markdown-file-url }}
-      control-description: ${{ steps.get-default-values-from-github.outputs.control-description }}
+      control-description: ${{ steps.get-control-data.outputs.control-description }}
       control-tags: ${{ steps.get-control-data.outputs.control-tags }}
       repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
 
@@ -171,11 +171,6 @@ jobs:
       - name: Get default values from GitHub
         id: get-default-values-from-github
         run: |
-          "control-description=$(
-            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).description }}' }
-            else { '${{ inputs.control-description }}' }
-          )" >> $env:GITHUB_OUTPUT
-          
           "control-thumbnail-url=$(
             if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}' }
             else { '${{ inputs.control-thumbnail-url }}' }
@@ -197,14 +192,19 @@ jobs:
           $ControlManifest=Get-ChildItem "*/ControlManifest.Input.xml"
           [xml]$XmlDocument=Get-Content -Path $ControlManifest.FullName
           "unique-name=$( $XmlDocument.manifest.control.constructor )" >> $env:GITHUB_OUTPUT
+          "description=$( $XmlDocument.manifest.control.'description-key' )" >> $env:GITHUB_OUTPUT
+          "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
           "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
           "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
-          "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
       - name: Get control data
         id: get-control-data
         run: |
           "control-tags=Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ('${{ inputs.control-tags }}' -ne '') { ', ${{ inputs.control-tags }}' } )" >> $env:GITHUB_OUTPUT
+          "control-description=$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ steps.get-solution-data.outputs.description }}' }
+            else { '${{ inputs.control-description }}' }
+          )" >> $env:GITHUB_OUTPUT
 
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj

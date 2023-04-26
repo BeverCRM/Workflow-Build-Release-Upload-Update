@@ -383,7 +383,7 @@ jobs:
             echo "result=${#result}" >> $GITHUB_OUTPUT
 
       - name: "Warning - no directory found to delete"
-        if: ${{ steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result == 0 }}
+        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result == 0 }}
         run: |
           echo "::warning title=Delete solution old version from Azure Blob Storage::No directory found with the name '${{ needs.solution-configuration.outputs.solution-unique-name }}' to delete."
 

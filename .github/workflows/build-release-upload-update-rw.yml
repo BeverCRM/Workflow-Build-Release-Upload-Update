@@ -159,7 +159,7 @@ jobs:
       control-thumbnail-url: ${{ steps.get-default-values-from-github.outputs.control-thumbnail-url }}
       control-primary-img-url: ${{ steps.get-default-values-from-github.outputs.control-primary-img-url }}
       control-markdown-file-url: ${{ steps.get-default-values-from-github.outputs.control-markdown-file-url }}
-      control-description: ${{ steps.get-control-data.outputs.control-description }}
+      control-description: ${{ steps.get-default-values-from-github.outputs.control-description }}
       control-tags: ${{ steps.get-control-data.outputs.control-tags }}
       repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
 
@@ -181,10 +181,6 @@ jobs:
             data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
 
             return data;
-
-      - name: Debug # TODO: remove
-        run: |
-          echo "${{ fromJson(steps.get-repo-metadata.outputs.result).description }}"
 
       - name: Get default values from GitHub
         id: get-default-values-from-github
@@ -316,7 +312,6 @@ jobs:
   build:
     needs: solution-configuration
     runs-on: windows-latest
-    if: ${{ false }} # TODO: remove
 
     steps:
       - uses: actions/checkout@v3
@@ -361,7 +356,6 @@ jobs:
       - solution-configuration
       - build
     runs-on: ubuntu-latest
-    if: ${{ false }} # TODO: remove
 
     steps:
       - uses: actions/checkout@v3
@@ -509,8 +503,7 @@ jobs:
     needs:
       - solution-configuration
       - update-database
-    # if: ${{ inputs.create-new-release == true }}
-    if: ${{ false }} # TODO: remove
+    if: ${{ inputs.create-new-release == true }}
     runs-on: ubuntu-latest
     
     outputs:

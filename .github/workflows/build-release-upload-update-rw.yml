@@ -1,4 +1,4 @@
-name: Reusable Workflow - Build & Release & Upload CI
+name: Build the project & Create a new release & Upload the solution to Azure Blob Storage & Update the Azure SQL Database
 
 on:
   workflow_call:
@@ -8,24 +8,19 @@ on:
         type: string
         required: true
       control-description:
-        description: Control description
+        description: Control description (included in use-default)
         type: string
       control-thumbnail-url:
-        description: Cotnrol thumbnail url
+        description: Cotnrol thumbnail url (included in use-default)
         type: string
-      control-primary-image-url:
-        description: Cotnrol primary image url
+      control-primary-img-url:
+        description: Cotnrol primary image url (included in use-default)
         type: string
       control-youtube-video-url:
         description: Cotnrol youtube video url
         type: string
-      control-price:
-        description: Cotnrol price
-        default: Free
-        type: string
-      control-img-extension:
-        description: Cotnrol images extension
-        default: png
+      control-markdown-file-url:
+        description: Cotnrol markdown file url (included in use-default)
         type: string
       control-tags:
         description: Control tags (comma separated | added by default `Bever-Controls, PCF, <control unique name>`)
@@ -52,6 +47,10 @@ on:
         type: boolean
       delete-old-version-from-azure:
         description: Delete the old version of the solution from Azure blob storage
+        default: true
+        type: boolean
+      use-default:
+        description: Use default information for control inputs
         default: true
         type: boolean
       node-version:
@@ -84,12 +83,6 @@ on:
       release-url:
         description: Created release URL, the URL users can navigate to in order to view the release
         value: ${{ jobs.create-release.outputs.release-url }}
-      unmanaged-zip-exists:
-        description: Whether the unmanaged solution exists or not
-        value: ${{ jobs.main.outputs.unmanaged-zip-exists }}
-      managed-zip-exists:
-        description: Whether the managed solution exists or not
-        value: ${{ jobs.main.outputs.managed-zip-exists }}
 
 jobs:
   input-validation:
@@ -105,22 +98,29 @@ jobs:
         run: |
           releaseSolutionPackageTypes="none unmanaged managed both"
           azureSolutionPackageTypes="unmanaged managed both"
+          urlRegex="^(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]$"
           
           ok=true
           message=""
 
-          if [[ $( echo ${{ inputs.solution-folder }} ) == "" ]]
-            then
-              ok=false
-              message="The parameter 'solution-folder' can not be blank."
-          elif [[ !($releaseSolutionPackageTypes =~ (" "|^)"${{ inputs.release-solution-package-type }}"(" "|$)) ]]
-            then
-              ok=false
-              message="'${{ inputs.release-solution-package-type }}' is not a valid value for 'release-solution-package-type' parameter."
-          elif [[ !($azureSolutionPackageTypes =~ (" "|^)"${{ inputs.azure-solution-package-type }}"(" "|$)) ]]
-            then
-              ok=false
-              message="'${{ inputs.azure-solution-package-type }}' is not a valid value for 'azure-solution-package-type' parameter."
+          if [[ $( echo "${{ inputs.solution-folder }}" ) == "" ]]; then
+            ok=false
+            message="The parameter 'solution-folder' can not be blank."
+          elif [[ ! ($releaseSolutionPackageTypes =~ (" "|^)"${{ inputs.release-solution-package-type }}"(" "|$)) ]]; then
+            ok=false
+            message="'${{ inputs.release-solution-package-type }}' is not a valid value for 'release-solution-package-type' parameter."
+          elif [[ ! ($azureSolutionPackageTypes =~ (" "|^)"${{ inputs.azure-solution-package-type }}"(" "|$)) ]]; then
+            ok=false
+            message="'${{ inputs.azure-solution-package-type }}' is not a valid value for 'azure-solution-package-type' parameter."
+          elif [[ "${{ inputs.control-thumbnail-url }}" != "" && ! "${{ inputs.control-thumbnail-url }}" =~ $urlRegex ]]; then
+            ok=false
+            message="'${{ inputs.control-thumbnail-url }}' is not a valid value for 'control-thumbnail-url' parameter."
+          elif [[ "${{ inputs.control-primary-img-url }}" != "" && ! "${{ inputs.control-primary-img-url }}" =~ $urlRegex ]]; then
+            ok=false
+            message="'${{ inputs.control-primary-img-url }}' is not a valid value for 'control-primary-img-url' parameter."
+          elif [[ "${{ inputs.control-markdown-file-url }}" != "" && ! "${{ inputs.control-markdown-file-url }}" =~ $urlRegex ]]; then
+            ok=false
+            message="'${{ inputs.control-markdown-file-url }}' is not a valid value for 'control-markdown-file-url' parameter."
           fi
 
           echo "ok=$ok" >> $GITHUB_OUTPUT
@@ -134,7 +134,7 @@ jobs:
 
   solution-configuration:
     needs: input-validation
-    if: ${{ needs.input-validation.outputs.ok == 'true' }}
+    if: ${{ needs.input-validation.outputs.ok == 'true' }}needs.solution-configuration.result == 'success'
     runs-on: windows-latest
     
     outputs:
@@ -142,43 +142,69 @@ jobs:
       solution-version: ${{ steps.get-solution-data.outputs.version }}
       solution-parsed-version: ${{ steps.get-solution-data.outputs.parsed-version }}
       solution-namespace: ${{ steps.get-solution-data.outputs.namespace }}
+      control-thumbnail-url: ${{ steps.get-default-values-from-github.outputs.control-thumbnail-url }}
+      control-primary-img-url: ${{ steps.get-default-values-from-github.outputs.control-primary-img-url }}
+      control-markdown-file-url: ${{ steps.get-default-values-from-github.outputs.control-markdown-file-url }}
+      control-description: ${{ steps.get-default-values-from-github.outputs.control-description }}
+      control-tags: ${{ steps.get-control-data.outputs.control-tags }}
+      repo-url: ${{ fromJson(steps.get-repo-metadata.outputs.result).html_url }}
 
     steps:
       - uses: actions/checkout@v3
 
+      - name: Get repository metadata
+        id: get-repo-metadata
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const branchName = process.env.GITHUB_REF.replace('refs/heads/', '');
+            const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+            const { data } = await github.rest.repos.get({ owner, repo });
+
+            data.thumbnail_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/thumbnail.png`;
+            data.primary_img_url = `${data.html_url}/blob/${branchName}/MarketplaceAssets/images/primary.png`;
+            data.markdown_file_url = `${data.html_url}/blob/${branchName}/README.md`;
+
+            return data;
+
+      - name: Get default values from GitHub
+        id: get-default-values-from-github
+        run: |
+          "control-description=$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).description }}' }
+            else { '${{ inputs.control-description }}' }
+          )" >> $env:GITHUB_OUTPUT
+          
+          "control-thumbnail-url=$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}' }
+            else { '${{ inputs.control-thumbnail-url }}' }
+          )" >> $env:GITHUB_OUTPUT
+          
+          "control-primary-img-url=$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).primary_img_url }}' }
+            else { '${{ inputs.control-primary-img-url }}' }
+          )" >> $env:GITHUB_OUTPUT
+
+          "control-markdown-file-url=$(
+            if ('${{ inputs.use-default }}' -eq 'true') { '${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}' }
+            else { '${{ inputs.control-markdown-file-url }}' }
+          )" >> $env:GITHUB_OUTPUT
+
       - name: Get solution data from `ControlManifest.Input.xml`
         id: get-solution-data
         run: |
-          $ControlManifest=Get-ChildItem "*/ControlManifest.input.xml"
+          $ControlManifest=Get-ChildItem "*/ControlManifest.Input.xml"
           [xml]$XmlDocument=Get-Content -Path $ControlManifest.FullName
           "unique-name=$( $XmlDocument.manifest.control.constructor )" >> $env:GITHUB_OUTPUT
           "version=$( $XmlDocument.manifest.control.version )" >> $env:GITHUB_OUTPUT
           "parsed-version=$( $XmlDocument.manifest.control.version.replace('.', '_') )" >> $env:GITHUB_OUTPUT
           "namespace=$( $XmlDocument.manifest.control.namespace )" >> $env:GITHUB_OUTPUT
 
-      - name: Update `README.md` and copy to `${{ inputs.solution-folder }}/README.md`
-        id: update-readme-md
+      - name: Get control data
+        id: get-control-data
         run: |
-          $controlTags = "${{ inputs.control-tags }}"
-          $README = Get-Content -Path "README.md"
-
-          $NewContent = "---
-          title: ${{ inputs.control-title }}
-          description: ${{ inputs.control-description }}
-          version: v${{ steps.get-solution-data.outputs.version }}
-          blobPath: ${{ steps.get-solution-data.outputs.unique-name }}/${{ steps.get-solution-data.outputs.unique-name }}_${{ steps.get-solution-data.outputs.parsed-version }}_managed.zip
-          gitRepoUrl: https://github.com/BeverCRM/PCF-${{ steps.get-solution-data.outputs.unique-name }}
-          thumbnailUrl: ${{ inputs.control-thumbnail-url }}
-          primaryImageUrl: ${{ inputs.control-primary-image-url }}
-          youtubeVideoUrl: ${{ inputs.control-youtube-video-url }}
-          price: ${{ inputs.control-price }}
-          imgExtension: ${{ inputs.control-img-extension }}
-          tags: [Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ($controlTags) { ", ${{ inputs.control-tags }}" } )]
-          ---
-          "
-
-          Set-Content -Path "${{ inputs.solution-folder }}/README.md" -Value $NewContent
-          Add-Content -Path "${{ inputs.solution-folder }}/README.md" -Value $README
+          "control-tags=Bever-Controls, PCF, ${{ steps.get-solution-data.outputs.unique-name }}$( if ('${{ inputs.control-tags }}' -ne '') { ', ${{ inputs.control-tags }}' } )" >> $env:GITHUB_OUTPUT
 
       - name: Update `${{ inputs.solution-folder }}/${{ inputs.solution-folder }}.cdsproj`
         id: update-solution-cdsproj
@@ -221,7 +247,7 @@ jobs:
 
           $SolutionDescription = "PCF - ${{ inputs.control-title }}
         
-          ${{ inputs.control-description }}
+          ${{ steps.get-control-data.outputs.control-description }}
         
           https://marketplace.bevercrm.com
         
@@ -281,7 +307,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: solution_configuration_artifacts
-          path: github-action/solution/
+          path: tmp/solution/
 
       - name: Setup Node.js ${{ inputs.node-verion }}
         uses: actions/setup-node@v3
@@ -292,43 +318,177 @@ jobs:
         id: install-dependecies
         run: npm ci
 
-      - name: Refresh types
-        id: refresh-types
-        run: npm run refreshTypes
-
-      - name: Build project
-        id: build-project
-        run: |
-          npm run clean --if-present
-          npm run build -- --buildMode production --if-present
-
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 
       - name: MSBuild
         id: msbuild
-        working-directory: github-action/solution/
+        working-directory: tmp/solution/
         run: msbuild /t:rebuild /restore /p:configuration=release
 
       - name: Rename solution files to `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip` &  `${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip`
         id: rename-solution-files
-        run: get-childitem -path github-action/solution/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
-
-      - name: Move `github-action/solution/README.md` to `github-action/solution/bin/Release/`
-        id: move-readme-md
-        run: Move-Item -Path "github-action/solution/README.md" -Destination "github-action/solution/bin/Release"
+        run: get-childitem -path tmp/solution/bin/Release | rename-item -newname { $_.name -replace '${{ inputs.solution-folder }}', '${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}' }
 
       - name: Upload solution artifacts
         id: upload-solution-artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-          path: github-action/solution/bin/Release/
+          path: tmp/solution/bin/Release/
 
-  create-release:
+  upload-to-azure-storage:
     needs:
       - solution-configuration
       - build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        
+      - name: Download solution artifacts
+        id: download-solution-artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
+          path: tmp/solution/
+
+      - name: Check if solution directory already exists in Azure Blob Storage
+        id: check-if-solution-directory-already-exists-in-azure-storage
+        if: ${{ inputs.delete-old-version-from-azure == true }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            result=$( az storage blob list \
+            --prefix "${{ needs.solution-configuration.outputs.solution-unique-name }}/" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --output "tsv" )
+
+            echo "result=${#result}" >> $GITHUB_OUTPUT
+
+      - name: "Warning - no directory found to delete"
+        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result == 0 }}
+        run: |
+          echo "::warning title=Delete solution old version from Azure Blob Storage::No directory found with the name '${{ needs.solution-configuration.outputs.solution-unique-name }}' to delete."
+
+      - name: Delete solution directory from Azure Blob Storage (if exists)
+        id: delete-solution-directory-from-azure-storage
+        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-solution-directory-already-exists-in-azure-storage.outputs.result != 0 }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage fs directory delete \
+            --yes \
+            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
+
+      - name: Upload solution new version files (unmanaged & managed) to Azure Blob Storage
+        id: upload-solution-new-version-files-to-azure-storage
+        if: ${{ inputs.azure-solution-package-type == 'both' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload-batch \
+            --source tmp/solution/ \
+            --destination "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true
+
+      - name: Upload solution new version file (unmanaged) to Azure Blob Storage
+        id: upload-solution-new-version-unmanaged-file-to-azure-storage
+        if: ${{ inputs.azure-solution-package-type == 'unmanaged' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload \
+            --file "tmp/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true
+
+      - name: Upload solution new version file (managed) to Azure Blob Storage
+        id: upload-solution-new-version-managed-file-to-azure-storage
+        if: ${{ inputs.azure-solution-package-type == 'managed' }}
+        uses: Azure/cli@v1
+        with:
+          inlineScript: |
+            az storage blob upload \
+            --file "tmp/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip" \
+            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
+            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
+            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
+            --content-type application/zip \
+            --overwrite true
+
+  update-database:
+    needs:
+      - solution-configuration
+      - upload-to-azure-storage
+    runs-on: ubuntu-latest
+
+    env:
+      db-table-name: pcf_control
+      db-name: marketplacedb
+      db-server-name: bevermarketplaceserver.database.windows.net
+      db-username: ${{ secrets.DB_USERNAME }}
+      db-password: ${{ secrets.DB_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Generate SQL script to create/update a row of the `${{ env.db-table-name }}` table in Azure SQL Database depending on whether the row already exists or not (tmp/db.sql)
+        run: |
+          mkdir -p tmp
+          echo -n "
+            MERGE INTO ${{ env.db-table-name }} AS target
+            USING (SELECT '${{ inputs.control-title }}') AS source (name)
+            ON target.name = source.name
+            WHEN MATCHED THEN
+              UPDATE SET
+                name = '${{ inputs.control-title }}',
+                youtube_url = '${{ inputs.control-youtube-video-url }}',
+                thumbnail_url = '${{ needs.solution-configuration.outputs.control-thumbnail-url }}',
+                primary_img_url = '${{ needs.solution-configuration.outputs.control-primary-img-url }}',
+                markdown_file_url = '${{ needs.solution-configuration.outputs.control-markdown-file-url }}',
+                description = '${{ needs.solution-configuration.outputs.control-description }}',
+                github_repo_url = '${{ needs.solution-configuration.outputs.repo-url }}',
+                blob_url = '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+                version = 'v${{ needs.solution-configuration.outputs.solution-version }}',
+                tags = '${{ needs.solution-configuration.outputs.control-tags }}'
+            WHEN NOT MATCHED THEN
+              INSERT (name, youtube_url, thumbnail_url, primary_img_url, markdown_file_url, description, github_repo_url, blob_url, version, tags)
+              VALUES (
+                '${{ inputs.control-title }}',
+                '${{ inputs.control-youtube-video-url }}',
+                '${{ needs.solution-configuration.outputs.control-thumbnail-url }}',
+                '${{ needs.solution-configuration.outputs.control-primary-img-url }}',
+                '${{ needs.solution-configuration.outputs.control-markdown-file-url }}',
+                '${{ needs.solution-configuration.outputs.control-description }}',
+                '${{ needs.solution-configuration.outputs.repo-url }}',
+                '${{ needs.solution-configuration.outputs.solution-unique-name }}/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip',
+                'v${{ needs.solution-configuration.outputs.solution-version }}',
+                '${{ needs.solution-configuration.outputs.control-tags }}'
+              );" >> tmp/db.sql
+
+      - name: Execute the SQL script `tmp/db.sql`
+        id: execute-sql
+        uses: azure/sql-action@v2.1
+        with:
+          connection-string: Server=tcp:bevermarketplaceserver.database.windows.net,1433;Initial Catalog=marketplacedb;Persist Security Info=False;User ID=${{ secrets.DB_USERNAME }};Password=${{ secrets.DB_PASSWORD }};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;
+          path: tmp/db.sql
+
+  create-release: 
+    needs:
+      - solution-configuration
+      - update-database
     if: ${{ inputs.create-new-release == true }}
     runs-on: ubuntu-latest
     
@@ -346,7 +506,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-          path: github-action/solution/
+          path: tmp/solution/
 
       - name: Create release v${{ needs.solution-configuration.outputs.solution-version }}
         id: create-release
@@ -366,7 +526,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
+          asset_path: tmp/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
           asset_name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip
           asset_content_type: application/zip
 
@@ -378,109 +538,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
+          asset_path: tmp/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
           asset_name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip
           asset_content_type: application/zip
-
-  upload-to-azure-storage:
-    needs:
-      - solution-configuration
-      - create-release
-    if: ${{ always() && (needs.create-release.result == 'success' || needs.create-release.result == 'skipped') }}
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-        
-      - name: Download solution artifacts
-        id: download-solution-artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_artifacts
-          path: github-action/solution/
-
-      - name: Check if directory already exists
-        id: check-if-directory-already-exists
-        run: |
-          result=$( az storage blob exists \
-          --name "${{ needs.solution-configuration.outputs.solution-unique-name }}/README.md" \
-          --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-          --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-          --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-          --output "tsv" )
-
-          echo "result=$result" >> $GITHUB_OUTPUT
-
-      - name: "Warning - no directory found to delete"
-        if: ${{ steps.check-if-directory-already-exists.outputs.result == 'False' }}
-        run: |
-          echo "::warning title=Delete solution old version from Azure storage::No directory found to delete."
-
-      - name: Delete solution old version directory from Azure storage (if exists)
-        id: delete-solution-old-version-directory-from-azure-storage
-        if: ${{ inputs.delete-old-version-from-azure == true && steps.check-if-directory-already-exists.outputs.result == 'True' }}
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az storage fs directory delete \
-            --yes \
-            --name "${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --file-system "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}" \
-            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}"
-
-      - name: Upload `README.md` of the solution new version to Azure storage.
-        id: upload-solution-new-version-readme-file-to-azure-storage
-        if: ${{ inputs.azure-solution-package-type != 'both' }}
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az storage blob upload \
-            --file "github-action/solution/README.md" \
-            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --content-type text/markdown \
-            --overwrite true
-
-      - name: Upload solution new version files (unmanaged & managed) to Azure storage
-        id: upload-solution-new-version-files-to-azure-storage
-        if: ${{ inputs.azure-solution-package-type == 'both' }}
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az storage blob upload-batch \
-            --source github-action/solution/ \
-            --destination "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --content-type application/zip \
-            --overwrite true
-
-      - name: Upload solution new version file (unmanaged) to Azure storage
-        id: upload-solution-new-version-unmanaged-file-to-azure-storage
-        if: ${{ inputs.azure-solution-package-type == 'unmanaged' }}
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az storage blob upload \
-            --file "github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}.zip" \
-            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --content-type application/zip \
-            --overwrite true
-
-      - name: Upload solution new version file (managed) to Azure storage
-        id: upload-solution-new-version-managed-file-to-azure-storage
-        if: ${{ inputs.azure-solution-package-type == 'managed' }}
-        uses: Azure/cli@v1
-        with:
-          inlineScript: |
-            az storage blob upload \
-            --file "github-action/solution/${{ needs.solution-configuration.outputs.solution-unique-name }}_${{ needs.solution-configuration.outputs.solution-parsed-version }}_managed.zip" \
-            --container-name "${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}/${{ needs.solution-configuration.outputs.solution-unique-name }}" \
-            --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}" \
-            --connection-string "${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}" \
-            --content-type application/zip \
-            --overwrite true

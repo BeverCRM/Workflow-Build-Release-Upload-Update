@@ -1,13 +1,13 @@
-# Github Reusable Workflow - Build & Release & Upload CI
+# Github Reusable Workflow - Build & Release & Upload & Update
 > ***Note*** *Used within Bever*
 
 <br>
-This is a reusable workflow that builds the project, creates a new release, and uploads the solution files to Azure blob storage.
+This is a reusable workflow that builds the project, creates a new release, uploads the solution files to Azure Blob Storage, and updates the Azure SQL Database.
 
 ## Usage
 
-### Pre-requisites
-Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An [example workflow](https://github.com/BeverCRM/Workflow-Build-Release-Upload-CI#example-workflow-create-release-and-upload-solution-to-azure-storage-ci) is available below. For more information, reference the GitHub Help Documentation for [creating a workflow file](https://docs.github.com/en/actions/using-workflows#creating-a-workflow-file).
+### Prerequisites
+Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An [example workflow](https://github.com/BeverCRM/Workflow-Build-Release-Upload-Update#example-workflow-publish-on-marketplace-ci) is available below. For more information, reference the GitHub Help Documentation for [creating a workflow file](https://docs.github.com/en/actions/using-workflows#creating-a-workflow-file).
 
 <br>
 
@@ -35,23 +35,7 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>string</td>
     <td>---</td>
     <td>---</td>
-    <td>Control description</td>
-  </tr>
-  <tr>
-    <td>control-thumbnail-url</td>
-    <td>Optional</td>
-    <td>string</td>
-    <td>---</td>
-    <td>---</td>
-    <td>Control thumbnail url</td>
-  </tr>
-  <tr>
-    <td>control-primary-image-url</td>
-    <td>Optional</td>
-    <td>string</td>
-    <td>---</td>
-    <td>---</td>
-    <td>Control primary image url</td>
+    <td>Control description (included in use-default)</td>
   </tr>
   <tr>
     <td>control-youtube-video-url</td>
@@ -62,20 +46,28 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>Control youtube video url</td>
   </tr>
   <tr>
-    <td>control-price</td>
+    <td>control-thumbnail-url</td>
     <td>Optional</td>
     <td>string</td>
-    <td>Free</td>
     <td>---</td>
-    <td>Control price</td>
+    <td>---</td>
+    <td>Control thumbnail url (included in use-default)</td>
   </tr>
   <tr>
-    <td>control-img-extension</td>
+    <td>control-primary-image-url</td>
     <td>Optional</td>
     <td>string</td>
-    <td>png</td>
     <td>---</td>
-    <td>Control images extension</td>
+    <td>---</td>
+    <td>Control primary image url (included in use-default)</td>
+  </tr>
+  <tr>
+    <td>control-markdown-file-url</td>
+    <td>Optional</td>
+    <td>string</td>
+    <td>---</td>
+    <td>---</td>
+    <td>Cotnrol markdown file url (included in use-default)</td>
   </tr>
   <tr>
     <td>control-tags</td>
@@ -134,6 +126,14 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>Delete the old solution directory from Azure blob storage or not</td>
   </tr>
   <tr>
+    <td>use-default</td>
+    <td>Optional</td>
+    <td>boolean</td>
+    <td>true</td>
+    <td>---</td>
+    <td>Use default information for control inputs</td>
+  </tr>
+  <tr>
     <td>node-version</td>
     <td>Optional</td>
     <td>number</td>
@@ -169,13 +169,13 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>solution-parsed-version</td>
     <td>string</td>
     <td>The solution namespace</td>
-    <td>BeverControls</td>
+    <td>1_0_0</td>
   </tr>
   <tr>
     <td>solution-namespace</td>
     <td>string</td>
     <td>The solution parsed version</td>
-    <td>1_0_0</td>
+    <td>BeverControls</td>
   </tr>
   <tr>
     <td>release-id</td>
@@ -201,23 +201,11 @@ Create a workflow ```.yml``` file in your ```.github/workflows``` directory. An 
     <td>Created release URL, the URL users can navigate to in order to view the release</td>
     <td>https://github.com/BeverCRM/PCF-SampleCustomComponent/releases/tag/v1.0.0</td>
   </tr>
-  <tr>
-    <td>unmanaged-zip-exists</td>
-    <td>boolean</td>
-    <td>Whether the unmanaged solution exists or not</td>
-    <td>---</td>
-  </tr>
-  <tr>
-    <td>managed-zip-exists</td>
-    <td>boolean</td>
-    <td>Whether the managed solution exists or not</td>
-    <td>---</td>
-  </tr>
 </table>
 
 <br>
 
-### Example workflow: create-release-and-upload-solution-to-azure-storage-ci.yml
+### Example workflow: publish-on-marketplace-ci.yml
 On every *push* (or *pull request merge*) on the *release* branch, run this workflow.
 
 ```yaml
@@ -229,16 +217,15 @@ on:
 
 jobs:
   main:
-    uses: BeverCRM/Workflow-Build-Release-Upload-CI/.github/workflows/build-release-upload-ci.yml@master
+    uses: BeverCRM/Workflow-Build-Release-Upload-Update/.github/workflows/build-release-upload-update-rw.yml@master
     secrets: inherit
     with:
       control-title: Sample Custom Component # required
       # control-description: '' # default
-      # control-thumbnail-url: '' # default
-      # control-primary-image-url: '' # default
       # control-youtube-video-url: '' # default
-      # control-price: Free # default
-      # control-img-extension: png # default
+      # control-thumbnail-url: '' # included in use-default
+      # control-primary-image-url: '' # included in use-default
+      # control-markdown-file-url: '' # included in use-default
       # control-tags: Bever-Controls, PCF # added by default
       # solution-folder: Solution # default
       # pcfproj-prefix: PCF- # default
@@ -246,13 +233,11 @@ jobs:
       # azure-solution-package-type: managed # default
       # create-new-release: true # default
       # delete-old-version-from-azure: true # default
+      # use-default: true # default
       # node-version: 16 # default
 ```
 
 <br>
-<br>
-
-> ***Note*** **You need to have a *README.md* file to upload to Azure Blob Storage for the PCF description.**
 
 ---
 

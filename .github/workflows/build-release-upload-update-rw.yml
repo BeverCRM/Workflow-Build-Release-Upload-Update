@@ -1,19 +1,5 @@
 name: Build the project & Create a new release & Upload the solution to Azure Blob Storage & Update the Azure SQL Database
 
-# TODO: install and use pac cli
-# TODO: Workflow-Build-Release-Upload-Update, build-release-upload-update-rw
-
-# TODO: Workflow-Build-Release-Upload-CI
-  # UPDATE
-  # change file name, change repo name
-  # update input and output parameters
-
-# TODO: Template-PCF
-  # UPDATE
-  # add MarketplaceAssets/images folder with README to indicate thumnail.png and primary.png files
-  # update input and output parameters
-  # change file name, change repo name
-
 on:
   workflow_call:
     inputs:

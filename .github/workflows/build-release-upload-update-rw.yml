@@ -316,6 +316,7 @@ jobs:
   build:
     needs: solution-configuration
     runs-on: windows-latest
+    if: ${{ false }} # TODO: remove
 
     steps:
       - uses: actions/checkout@v3
@@ -360,6 +361,7 @@ jobs:
       - solution-configuration
       - build
     runs-on: ubuntu-latest
+    if: ${{ false }} # TODO: remove
 
     steps:
       - uses: actions/checkout@v3

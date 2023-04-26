@@ -182,6 +182,14 @@ jobs:
 
             return data;
 
+      - name: Debug 1 # TODO: remove
+        run: |
+          echo "description: ${{ fromJson(steps.get-repo-metadata.outputs.result).description }}"
+          echo "thumbnail_url: ${{ fromJson(steps.get-repo-metadata.outputs.result).thumbnail_url }}"
+          echo "primary_img_url: ${{ fromJson(steps.get-repo-metadata.outputs.result).primary_img_url }}"
+          echo "markdown_file_url: ${{ fromJson(steps.get-repo-metadata.outputs.result).markdown_file_url }}"
+          echo "${{ steps.get-repo-metadata.outputs.result }}"
+
       - name: Get default values from GitHub
         id: get-default-values-from-github
         run: |
@@ -504,7 +512,7 @@ jobs:
       - solution-configuration
       - update-database
     # if: ${{ inputs.create-new-release == true }}
-    if: ${{ false }}
+    if: ${{ false }} # TODO: remove
     runs-on: ubuntu-latest
     
     outputs:

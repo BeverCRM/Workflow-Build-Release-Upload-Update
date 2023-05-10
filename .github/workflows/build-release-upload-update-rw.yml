@@ -318,6 +318,10 @@ jobs:
         id: install-dependecies
         run: npm ci
 
+      - name: Refresh types (create generated/ManifestTypes.d.ts)
+        id: refresh-types
+        run: npm run refreshTypes
+
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
 

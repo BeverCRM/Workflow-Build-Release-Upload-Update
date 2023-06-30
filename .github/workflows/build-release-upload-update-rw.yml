@@ -309,10 +309,10 @@ jobs:
           name: solution_configuration_artifacts
           path: tmp/solution/
 
-      - name: Setup Node.js ${{ inputs.node-verion }}
+      - name: Setup Node.js ${{ inputs.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ inputs.node-verion }}
+          node-version: ${{ inputs.node-version }}
 
       - name: Install dependencies
         id: install-dependecies
